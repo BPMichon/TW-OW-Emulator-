@@ -123,14 +123,14 @@ class Player:
     self.name = name
     self.gold = gold
     self.current_location = current_location
-    self.deck = [card_1, card_1, card_2]
+    self.hand = [card_1, card_1, card_2]
     self.discard = []
 
 
   def discard_card(self,card):
       """discards a card to your discard pile"""
-      if card in self.deck:
-          self.deck.remove(card)
+      if card in self.hand:
+          self.hand.remove(card)
           self.discard.append(card)  
 
   def state(self):
@@ -140,11 +140,51 @@ class Player:
       print("Current Location:", self.current_location.name)
       print("\n")
 
+  def move_location(self,location : Location):
+      self.current_location = location
+
+  def avaiable_terrain(self):
+      forest_count = 0
+      sea_count = 0
+      mountain_count = 0
+      wild_count = 0
+
+      for card in self.hand:
+          print("Terrain:",card.terrain,"")
+          if card.terrain == "FOREST":
+            forest_count +=1
+          elif card.terrain == "MOUNTAIN":
+            mountain_count +=1
+          elif card.terrain == "SEA":
+              sea_count += 1
+          else:
+              wild_count += 1
+
+      return {'FOREST': forest_count,"MOUNTAIN":mountain_count,"SEA":sea_count,"WILD":wild_count}
+        
+  def decide_where_to_move(self):
+    for loc in  self.current_location.adjacent_locations:
+        # Move to a location for 1 Card First, then prioritize 1 card 1 gold, then 2 cards
+        # Assign value to location based on if they are traversable
+        # Choose the lowest value
+        # Then Discard Card (Which one to discard? Check strength between cards?? Evaluate Hand Strength)
+        pass
+
+  def evaluate_hand_strength(self):
+      # Evaluate Hand Combo Strength
+      pass
+  def worst_card_in_hand(self,terrain):
+        #Look at your hand and given a terrain, find the worst card in the hand 
+        # (minimizes hand strength loss)
+        pass
+
 # View the data
 for loc in locations:
     loc.state()
 
 
-
 Player1 = Player("Wolf", 2, locations[3])
 Player1.state()
+Player1.decide_where_to_move()
+Player1.avaiable_terrain()
+print(Player1.avaiable_terrain())
