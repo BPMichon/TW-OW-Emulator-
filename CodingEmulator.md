@@ -1,5 +1,12 @@
 # Emulator for Witcher:OldWorld
 
+# Update 14:29
+So I realised its probably better to do the board game options for players first, then from each choice the player makes we can generate a whole Board State, as well as possible Moves the player can Take.
+
+There is no point implementing choices for moves rn, since these should be managed by different Heuristics.
+
+
+# Goal
 Currently focsuing on creating the Traversal part of the game that is present in **Phase 1 : Movement and Action**
 There are 19 locations ( 0 - 18), locations 19,20,21 are in an Expansion that Im not planning on adding rn.
 
@@ -27,6 +34,8 @@ Locations:
 
 Locations Matrix
 ----------------
+
+
 
 
 
