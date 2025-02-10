@@ -1,0 +1,21 @@
+[
+    {"id": 0, "name": "Behelt Nar", "terrain": "ALL", "adjacents": [4,8,11,12]},
+    {"id": 1, "name": "Kaer Seren", "terrain": "SEA", "adjacents": [2,5,6,9]},
+    {"id": 2, "name": "Hengfors", "terrain": "MOUNTAIN", "adjacents": [1,3,6,7]},
+    {"id": 3, "name": "Kaer Morhen", "terrain": "MOUNTAIN", "adjacents": [2,4,7]},
+    {"id": 4, "name": "Ban Ard", "terrain": "SEA", "adjacents": [3,7,8,0]},
+    {"id": 5, "name": "Cidaris", "terrain": "SEA", "adjacents": [1,6,9]},
+    {"id": 6, "name": "Novigrad", "terrain": "FOREST", "adjacents": [1,2,5,7,9]},
+    {"id": 7, "name": "Vizima", "terrain": "FOREST", "adjacents": [2,3,4,6,8,9,10,11]},
+    {"id": 8, "name": "Vengerberg", "terrain": "FOREST", "adjacents": [4,7,11,0]},
+    {"id": 9, "name": "Cintra", "terrain": "MOUNTAIN", "adjacents": [1,5,6,7,10,13]},
+    {"id": 10, "name": "Haern Caduch", "terrain": "FOREST", "adjacents": [7,9,11,13,15]},
+    {"id": 11, "name": "Beauclair", "terrain": "MOUNTAIN", "adjacents": [7,8,10,12,15,16,0]},
+    {"id": 12, "name": "Glenmore", "terrain": "SEA", "adjacents": [11,16,0]},
+    {"id": 13, "name": "Doldeth", "terrain": "MOUNTAIN", "adjacents": [9,10,14,15]},
+    {"id": 14, "name": "Loc Ichaer", "terrain": "SEA", "adjacents": [13,15,17]},
+    {"id": 15, "name": "Gorthur Guaed", "terrain": "SEA", "adjacents": [10,11,13,14,16,17,18]},
+    {"id": 16, "name": "Dhuwod", "terrain": "FOREST", "adjacents": [11,12,15,18]},
+    {"id": 17, "name": "Stygga", "terrain": "FOREST", "adjacents": [14,15,18]},
+    {"id": 18, "name": "Ard Modron", "terrain": "MOUNTAIN", "adjacents": [15,16,17]}
+]

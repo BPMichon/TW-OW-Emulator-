@@ -1,0 +1,1355 @@
+
+{
+    "1": {
+        "name": "Precise Cut",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "yellow": {
+                "DMG": 1
+            }
+        }
+    },
+    "2": {
+        "name": "Precise Cut",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "yellow": {
+                "DMG": 1
+            }
+        }
+    },
+    "3": {
+        "name": "Precise Cut",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "purple": {
+                "DMG": 1
+            }
+        }
+    },
+    "4": {
+        "name": "Precise Cut",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "purple": {
+                "DMG": 1
+            }
+        }
+    },
+    "5": {
+        "name": "Precise Cut",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "red": {
+                "DMG": 1
+            }
+        }
+    },
+    "6": {
+        "name": "Precise Cut",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "red": {
+                "DMG": 1
+            }
+        }
+    },
+    "7": {
+        "name": "Precise Cut",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "green": {
+                "DMG": 1
+            }
+        }
+    },
+    "8": {
+        "name": "Precise Cut",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "green": {
+                "DMG": 1
+            }
+        }
+    },
+    "9": {
+        "name": "Whirl",
+        "colour": "blue",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "green": {
+                "DMG": 2
+            }
+        }
+    },
+    "10": {
+        "name": "Whirl",
+        "colour": "blue",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "purple": {
+                "BLANK": 0
+            },
+            "red":{
+                "BLANK": 0
+            }
+        }
+    },
+    "11": {
+        "name": "Whirl",
+        "colour": "blue",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "purple": {
+                "BLANK": 0
+            },
+            "green":{
+                "BLANK": 0
+            }
+        }
+    },
+    "12": {
+        "name": "Whirl",
+        "colour": "blue",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "purple": {
+                "DMG": 2
+            }
+        }
+    },
+    "13": {
+        "name": "Whirl",
+        "colour": "blue",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "yellow": {
+                "BLANK": 0
+            },
+            "green":{
+                "BLANK": 0
+            }
+        }
+    },
+    "14": {
+        "name": "Whirl",
+        "colour": "blue",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "yellow": {
+                "DMG": 2
+            }
+        }
+    },
+    "15": {
+        "name": "Crippling Strike",
+        "colour": "blue",
+        "cost": 2,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "red": {
+                "DMG": 1
+            },
+            "purple":{
+                "DMG":1
+            }
+        }
+    },
+    "16": {
+        "name": "Crippling Strike",
+        "colour": "blue",
+        "cost": 2,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "red": {
+                "DMG": 1
+            },
+            "green":{
+                "DMG":1
+            }
+        }
+    },
+    "17": {
+        "name": "Crippling Strike",
+        "colour": "blue",
+        "cost": 2,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "green": {
+                "DMG": 1
+            },
+            "yellow":{
+                "DMG":1
+            }
+        }
+    },
+    "18": {
+        "name": "Crippling Strike",
+        "colour": "blue",
+        "cost": 2,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "yellow": {
+                "DMG": 1
+            },
+            "purple":{
+                "DMG":1
+            }
+        }
+    },
+    "19": {
+        "name": "Stagering Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 2,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "20": {
+        "name": "Stagering Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 2,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "21": {
+        "name": "Stagering Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 2,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "22": {
+        "name": "Stagering Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 2,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "23": {
+        "name": "Stagering Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 2,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "24": {
+        "name": "Stagering Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 2,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "25": {
+        "name": "Stagering Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 2,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "26": {
+        "name": "Stagering Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 2,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "27": {
+        "name": "Precise Blow",
+        "colour": "red",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-3
+        },
+        "combos": {}
+    },
+    "28": {
+        "name": "Precise Blow",
+        "colour": "red",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-3
+        },
+        "combos": {}
+    },
+    "29": {
+        "name": "Precise Blow",
+        "colour": "red",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-3
+        },
+        "combos": {}
+    },
+    "30": {
+        "name": "Precise Blow",
+        "colour": "red",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-3
+        },
+        "combos": {}
+    },
+    "31": {
+        "name": "Precise Blow",
+        "colour": "red",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-3
+        },
+        "combos": {}
+    },
+    "32": {
+        "name": "Precise Blow",
+        "colour": "red",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-3
+        },
+        "combos": {}
+    },
+    "33": {
+        "name": "Crushing Blow",
+        "colour": "red",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "34": {
+        "name": "Crushing Blow",
+        "colour": "red",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "35": {
+        "name": "Crushing Blow",
+        "colour": "red",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "36": {
+        "name": "Crushing Blow",
+        "colour": "red",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 3,
+            "DRAW":-1
+        },
+        "combos": {}
+    },
+    "37": {
+        "name": "Counter Attack",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "SHIELD": 1
+        },
+        "combos": {
+            "red":{
+                "DMG":1
+            }
+        }
+    },
+    "38": {
+        "name": "Counter Attack",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "SHIELD": 1
+        },
+        "combos": {
+            "blue":{
+                "DMG":1
+            }
+        }
+    },
+    "39": {
+        "name": "Counter Attack",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "SHIELD": 1
+        },
+        "combos": {
+            "purple":{
+                "DMG":1
+            }
+        }
+    },
+    "40": {
+        "name": "Counter Attack",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "SHIELD": 1
+        },
+        "combos": {
+            "yellow":{
+                "DMG":1
+            }
+        }
+    },
+    "41": {
+        "name": "Cover",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "SHIELD": 1
+        },
+        "combos": {
+            "red":{
+                "RETURN": 0
+            },
+            "blue":{
+                "RETURN": 0
+            }
+        }
+    },
+    "42": {
+        "name": "Cover",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "SHIELD": 1
+        },
+        "combos": {
+            "purple":{
+                "RETURN": 0
+            },
+            "blue":{
+                "RETURN": 0
+            }
+        }
+    },
+    "43": {
+        "name": "Cover",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "SHIELD": 1
+        },
+        "combos": {
+            "red":{
+                "RETURN": 0
+            },
+            "yellow":{
+                "RETURN": 0
+            }
+        }
+    },
+    "44": {
+        "name": "Cover",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "SHIELD": 1
+        },
+        "combos": {
+            "yellow":{
+                "RETURN": 0
+            },
+            "purple":{
+                "RETURN": 0
+            }
+        }
+    },
+    "45": {
+        "name": "Block",
+        "colour": "green",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "yellow":{
+                "RETURN": 0
+            },
+            "purple":{
+                "RETURN": 0
+            }
+        }
+    },
+    "46": {
+        "name": "Block",
+        "colour": "green",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "blue":{
+                "RETURN": 0
+            },
+            "purple":{
+                "RETURN": 0
+            }
+        }
+    },
+    "47": {
+        "name": "Block",
+        "colour": "green",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "yellow":{
+                "RETURN": 0
+            },
+            "red":{
+                "RETURN": 0
+            }
+        }
+    },
+    "48": {
+        "name": "Block",
+        "colour": "green",
+        "cost": 1,
+        "terrain": "FOREST",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "red":{
+                "RETURN": 0
+            },
+            "blue":{
+                "RETURN": 0
+            }
+        }
+    },
+    "49": {
+        "name": "Block",
+        "colour": "green",
+        "cost": 1,
+        "terrain": "SEA",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "purple":{
+                "DMG": 1
+            }
+        }
+    },
+    "50": {
+        "name": "Block",
+        "colour": "green",
+        "cost": 1,
+        "terrain": "SEA",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "yellow":{
+                "DMG": 1
+            }
+        }
+    },
+    "51": {
+        "name": "Lightning Reflexes",
+        "colour": "green",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "blue":{
+                "DMG": 2
+            }
+        }
+    },
+    "52": {
+        "name": "Lightning Reflexes",
+        "colour": "green",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "yellow":{
+                "DMG": 2
+            }
+        }
+    },
+    "53": {
+        "name": "Lightning Reflexes",
+        "colour": "green",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "red":{
+                "DMG": 2
+            }
+        }
+    },
+    "54": {
+        "name": "Lightning Reflexes",
+        "colour": "green",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "SHIELD": 2
+        },
+        "combos": {
+            "purple":{
+                "DMG": 2
+            }
+        }
+    },
+    "55": {
+        "name": "Intensive Aard ",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "green":{
+                "SHIELD": 1
+            }
+        }
+    },
+    "56": {
+        "name": "Intensive Aard ",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "yellow":{
+                "SHIELD": 1
+            }
+        }
+    },
+    "57": {
+        "name": "Intensive Aard ",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "red":{
+                "SHIELD": 1
+            }
+        }
+    },
+    "58": {
+        "name": "Intensive Aard ",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "blue":{
+                "SHIELD": 1
+            }
+        }
+    },
+    "59": {
+        "name": "Intensive Igni ",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 1,
+            "DRAW": 1
+        },
+        "combos": {
+            "green":{
+                "BLANK": 0
+            },
+            "yellow":{
+                "BLANK": 0
+            },
+            "red":{
+                "BLANK": 0
+            },
+            "blue":{
+                "BLANK": 0
+            }
+        }
+    },
+    "60": {
+        "name": "Intensive Igni ",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 1,
+            "DRAW": 1
+        },
+        "combos": {
+            "green":{
+                "BLANK": 0
+            },
+            "yellow":{
+                "BLANK": 0
+            },
+            "red":{
+                "BLANK": 0
+            },
+            "blue":{
+                "BLANK": 0
+            }
+        }
+    },
+    "61": {
+        "name": "Intensive Igni ",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 1,
+            "DRAW": 1
+        },
+        "combos": {
+            "green":{
+                "BLANK": 0
+            },
+            "yellow":{
+                "BLANK": 0
+            },
+            "red":{
+                "BLANK": 0
+            },
+            "blue":{
+                "BLANK": 0
+            }
+        }
+    },
+    "62": {
+        "name": "Intensive Igni ",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 1,
+            "DRAW": 1
+        },
+        "combos": {
+            "green":{
+                "BLANK": 0
+            },
+            "yellow":{
+                "BLANK": 0
+            },
+            "red":{
+                "BLANK": 0
+            },
+            "blue":{
+                "BLANK": 0
+            }
+        }
+    }, 
+    "63": {
+        "name": "Armour Melting",
+        "colour": "purple",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "green":{
+                "SHIELD": 1
+            }
+        }
+    },
+    "64": {
+        "name": "Armour Melting",
+        "colour": "purple",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "yellow":{
+                "SHIELD": 1
+            }
+        }
+    },
+    "65": {
+        "name": "Shock Wave",
+        "colour": "purple",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "green":{
+                "DRAW": 2
+            }
+        }
+    },
+    "66": {
+        "name": "Shock Wave",
+        "colour": "purple",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "yellow":{
+                "DRAW": 2
+            }
+        }
+    },
+    "67": {
+        "name": "Shock Wave",
+        "colour": "purple",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "blue":{
+                "DRAW": 2
+            }
+        }
+    },
+    "68": {
+        "name": "Shock Wave",
+        "colour": "purple",
+        "cost": 1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2
+        },
+        "combos": {
+            "red":{
+                "DRAW": 2
+            }
+        }
+    },
+    "69": {
+        "name": "Fire Stream",
+        "colour": "purple",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2,
+            "DRAW":2
+        },
+        "combos": {
+            "green":{
+                "BLANK":0
+            },
+            "blue":{
+                "BLANK":0
+            },
+            "red":{
+                "BLANK":0
+            },
+            "yellow":{
+                "BLANK":0
+            }
+        }
+    },
+    "70": {
+        "name": "Fire Stream",
+        "colour": "purple",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2,
+            "DRAW":2
+        },
+        "combos": {
+            "green":{
+                "BLANK":0
+            },
+            "blue":{
+                "BLANK":0
+            },
+            "red":{
+                "BLANK":0
+            },
+            "yellow":{
+                "BLANK":0
+            }
+        }
+    },
+    "71": {
+        "name": "Fire Stream",
+        "colour": "purple",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2,
+            "DRAW":2
+        },
+        "combos": {
+            "green":{
+                "BLANK":0
+            },
+            "blue":{
+                "BLANK":0
+            },
+            "red":{
+                "BLANK":0
+            },
+            "yellow":{
+                "BLANK":0
+            }
+        }
+    },
+    "72": {
+        "name": "Fire Stream",
+        "colour": "purple",
+        "cost": 2,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 2,
+            "DRAW":2
+        },
+        "combos": {
+            "green":{
+                "BLANK":0
+            },
+            "blue":{
+                "BLANK":0
+            },
+            "red":{
+                "BLANK":0
+            },
+            "yellow":{
+                "BLANK":0
+            }
+        }
+    },
+    "73": {
+        "name": "Intensive Yrden",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DRAW":2
+        },
+        "combos": {
+            "green":{
+                "DMG":2
+            }
+        }
+    },
+    "74": {
+        "name": "Intensive Yrden",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DRAW":2
+        },
+        "combos": {
+            "blue":{
+                "DMG":2
+            }
+        }
+    },
+    "75": {
+        "name": "Intensive Yrden",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DRAW":2
+        },
+        "combos": {
+            "red":{
+                "DMG":2
+            }
+        }
+    },
+    "76": {
+        "name": "Intensive Yrden",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DRAW":2
+        },
+        "combos": {
+            "purple":{
+                "DMG":2
+            }
+        }
+    },
+    "77": {
+        "name": "Intensive Axii",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "purple":{
+                "BLANK":0
+            },
+            "red":{
+                "BLANK":0
+            }
+        }
+    },
+    "78": {
+        "name": "Intensive Axii",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "green":{
+                "BLANK":0
+            },
+            "blue":{
+                "BLANK":0
+            }
+        }
+    },
+    "79": {
+        "name": "Intensive Axii",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "green":{
+                "BLANK":0
+            },
+            "red":{
+                "BLANK":0
+            }
+        }
+    },
+    "80": {
+        "name": "Intensive Axii",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "blue":{
+                "BLANK":0
+            },
+            "red":{
+                "BLANK":0
+            }
+        }
+    },
+    "81": {
+        "name": "Intensive Quen",
+        "colour": "yellow",
+        "cost":1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DRAW":2
+        },
+        "combos": {
+            "green":{
+                "DMG":2
+            }
+        }
+    },
+    "82": {
+        "name": "Intensive Quen",
+        "colour": "yellow",
+        "cost":1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DRAW":2
+        },
+        "combos": {
+            "blue":{
+                "DMG":2
+            }
+        }
+    },
+    "83": {
+        "name": "Intensive Quen",
+        "colour": "yellow",
+        "cost":1,
+        "terrain": "SEA",
+        "ability": {
+            "DRAW":2
+        },
+        "combos": {
+            "red":{
+                "DMG":2
+            }
+        }
+    },
+    "84": {
+        "name": "Intensive Quen",
+        "colour": "yellow",
+        "cost":1,
+        "terrain": "SEA",
+        "ability": {
+            "DRAW":2
+        },
+        "combos": {
+            "purple":{
+                "DMG":2
+            }
+        }
+    },
+    "85": {
+        "name": "Magick Trap",
+        "colour": "yellow",
+        "cost":1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "purple":{
+                "DMG":1
+            },
+            "blue":{
+                "DMG":1
+            }
+        }
+    },
+    "86": {
+        "name": "Magick Trap",
+        "colour": "yellow",
+        "cost":1,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "red":{
+                "DMG":1
+            },
+            "green":{
+                "DMG":1
+            }
+        }
+    },
+    "87": {
+        "name": "Exploding Shield",
+        "colour": "yellow",
+        "cost":2,
+        "terrain": "FOREST",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "purple":{
+                "DMG":2
+            }
+        }
+    },
+    "88": {
+        "name": "Exploding Shield",
+        "colour": "yellow",
+        "cost":2,
+        "terrain": "SEA",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "red":{
+                "DMG":2
+            }
+        }
+    },
+    "89": {
+        "name": "Exploding Shield",
+        "colour": "yellow",
+        "cost":2,
+        "terrain": "FOREST",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "purple":{
+                "DMG":2
+            }
+        }
+    },
+    "90": {
+        "name": "Exploding Shield",
+        "colour": "yellow",
+        "cost":2,
+        "terrain": "SEA",
+        "ability": {
+            "DISCARD_DRAW":1
+        },
+        "combos": {
+            "blue":{
+                "DMG":2
+            }
+        }
+    }
+}
+
+    
+    

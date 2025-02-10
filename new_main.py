@@ -1,5 +1,6 @@
 import networkx as nx
 import random
+import json
 
 ########################################################################################
 ############################### LOCATIONS CODE #########################################
@@ -7,39 +8,19 @@ import random
 # We generate a graph using NetworkX library, this lets us easily define adjacency of nodes,
 # aswell as quickly look up route between nodes using different graph algorithms
 
+# Changed to using Data from json file, this means I dont need to store all the arrays in code
+
 map_graph = nx.Graph()
 
-# Location Names
-LocationNames = [
-  'Behelt Nar','Kaer Seren','Hengfors','Kaer Morhen','Ban Ard',
-  'Cidaris','Novigrad','Vizima','Vengerberg','Cintra',
-  'Haern Caduch','Beauclair','Glenmore','Doldeth','Loc Ichaer',
-  'Gorthur Guaed','Dhuwod','Stygga','Ard Modron'
-]
+with open("Game_Data/location.json", "r") as f:
+    locations = json.load(f)
 
-# Adjacency Matrix
-LocMatrix = [
-  [4,8,11,12], [2,5,6,9], [1,3,6,7], [2,4,7], [3,7,8,0],
-  [1,6,9], [1,2,5,7,9], [2,3,4,6,8,9,10,11], [4,7,11,0], [1,5,6,7,10,13],
-  [7,9,11,13,15], [7,8,10,12,15,16,0], [11,16,0], [9,10,14,15], [13,15,17],
-  [10,11,13,14,16,17,18], [11,12,15,18], [14,15,18], [15,16,17]
-]
+for location in locations:
+    map_graph.add_node(location["id"], name=location["name"], terrain=location["terrain"])
 
-LocationTerrains = [
-  'ALL','SEA','MOUNTAIN','MOUNTAIN','SEA','SEA','FOREST','FOREST','FOREST','MOUNTAIN',
-  'FOREST','MOUNTAIN','SEA','MOUNTAIN','SEA','SEA','FOREST','FOREST','MOUNTAIN'
-]
-
-# Add nodes with Location attributes
-# Should I pass by adress or value??
-for idx, name in enumerate(LocationNames):
-    map_graph.add_node(idx, name=name, terrain=LocationTerrains[idx])
-
-# Add edges from adjacency matrix
-for idx, adjacents in enumerate(LocMatrix):
-    for neighbor in adjacents:
-        map_graph.add_edge(idx, neighbor)
-
+for location in locations:
+    for neighbor in location["adjacents"]:
+        map_graph.add_edge(location["id"], neighbor)
 
 
 ########################################################################################
@@ -99,8 +80,20 @@ class Board:
                     self.move(player, moves[choice])
 
 ########################################################################################
-############################# CARD CODE #################################################
+############################# CARD CODE ################################################
 ########################################################################################
+
+# I will create similar components for the cards here, 
+with open("Game_Data/action_cards.json", "r") as f:
+    action_cards = json.load(f)
+print("\n Card \n")
+
+print(action_cards.get("1", "Card not found."))
+
+
+
+
+
 
 class Card:
     def __init__(self, name, terrain, cost , colour):
@@ -108,7 +101,7 @@ class Card:
         self.terrain = terrain
         self.cost = cost
         self.colour = colour
-        
+
 
 
 ########################################################################################
@@ -149,9 +142,9 @@ class AI(Player):
 ################################# MAIN CODE ############################################
 ########################################################################################
 
-C1 = Card('Card1','SEA')
-C2 = Card('Card2','FOREST')
-C3 = Card('Card3','MOUNTAIN')
+C1 = Card('Card1','SEA',1,"Blue")
+C2 = Card('Card2','FOREST',2,"Red")
+C3 = Card('Card3','MOUNTAIN',3,"Green")
 
 SampleHand = [C1,C2,C3]
 
