@@ -25,15 +25,9 @@ LocMatrix = [
   [10,11,13,14,16,17,18], [11,12,15,18], [14,15,18], [15,16,17]
 ]
 
-LocationTerrains = [
-  'ALL','SEA','MOUNTAIN','MOUNTAIN','SEA','SEA','FOREST','FOREST','FOREST','MOUNTAIN',
-  'FOREST','MOUNTAIN','SEA','MOUNTAIN','SEA','SEA','FOREST','FOREST','MOUNTAIN'
-]
-
 # Add nodes with Location attributes
-# Should I pass by adress or value??
 for idx, name in enumerate(LocationNames):
-    map_graph.add_node(idx, name=name, terrain=LocationTerrains[idx])
+    map_graph.add_node(idx, name=name)
 
 # Add edges from adjacency matrix
 for idx, adjacents in enumerate(LocMatrix):
@@ -55,9 +49,7 @@ class Board:
     
     def display(self):
         for player in self.players:
-            print(f"{player.name} is at {self.graph.nodes[player.current_position]['name']} ({self.graph.nodes[player.current_position]['terrain']})")
-            print(f"Gold: {player.gold} , Cards: {[card.name for card in player.cards]}")
-            print()
+            print(f"{player.name} is at {self.graph.nodes[player.current_position]['name']}")
         print()
     
     def get_valid_moves(self, player):
@@ -83,13 +75,6 @@ class Board:
 
                 elif isinstance(player, Player):
                     print(f"{player.name}'s turn! Choose a move:")
-
-                    ## Need to see all possible moves, for all 3 possible variations
-                    ## Valid Moves for spending 1 Location
-                    ## Valid Moves for spending 1 Location and 1 Gold
-                    ## Valid Moves for spending 2 Gold
-
-
                     moves = self.get_valid_moves(player)
 
                     for i, move in enumerate(moves):
@@ -98,39 +83,18 @@ class Board:
                     choice = int(input("Enter move index: "))
                     self.move(player, moves[choice])
 
-########################################################################################
-############################# CARD CODE #################################################
-########################################################################################
 
-class Card:
-    def __init__(self, name, terrain, cost , colour):
-        self.name = name
-        self.terrain = terrain
-        self.cost = cost
-        self.colour = colour
-        
-
-
-########################################################################################
-############################# PLAYER CODE ##############################################
-########################################################################################
 
 # Player Class stores all information About Player
 class Player:
-    def __init__(self,name,current_position,starter_cards, gold=2):
+    def __init__(self,name,current_position):
         self.name = name
         self.current_position = current_position
-        self.cards = starter_cards
-        self.discard = []
-        self.gold = gold
 
 # Heuristic function (AI chases the player, currently only works for 1 player)
 def heuristic(position, board):
     player_pos = board.players[0].current_position
     return -nx.shortest_path_length(board.graph, source=position, target=player_pos)  # Minimize distance
-
-def discard(card):
-    pass
 
 # AI using state search
 class AI(Player):
@@ -145,19 +109,9 @@ class AI(Player):
 
 
 
-########################################################################################
-################################# MAIN CODE ############################################
-########################################################################################
 
-C1 = Card('Card1','SEA')
-C2 = Card('Card2','FOREST')
-C3 = Card('Card3','MOUNTAIN')
 
-SampleHand = [C1,C2,C3]
-
-# Initialize Players and Board
-P1 = Player('P1', 1, SampleHand)
-AI_player = AI('AI', 12, SampleHand)
-
+P1 = Player('P1', 1)
+AI_player = AI('AI', 12)
 board = Board(graph=map_graph, players=[P1,AI_player])
 board.start_game()
