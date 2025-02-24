@@ -1,0 +1,120 @@
+{
+    "W1": {
+        "name": "Push",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "SHIELD": 1,
+            "DRAW": 1
+        },
+        "combos": {}
+    },
+    "W2": {
+        "name": "Push",
+        "colour": "green",
+        "cost": 0,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "SHIELD": 1,
+            "DRAW": 1
+        },
+        "combos": {}
+    },
+    "W3": {
+        "name": "Yrden",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DRAW": 3
+        },
+        "combos": {}
+    },
+    "W4": {
+        "name": "Yrden",
+        "colour": "yellow",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DRAW": 1
+        },
+        "combos": {
+            "red":{
+                "DMG":1
+            }
+        }
+    },
+    "W5": {
+        "name": "Aard",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "green":{
+                "DRAW":1
+            }
+        }
+    },
+    "W6": {
+        "name": "Aard",
+        "colour": "purple",
+        "cost": 0,
+        "terrain": "SEA",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "red":{
+                "SHIELD":1
+            }
+        }
+    },
+    "W7": {
+        "name": "Rending Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {}
+    },
+    "W8": {
+        "name": "Rending Blow",
+        "colour": "red",
+        "cost": 0,
+        "terrain": "FOREST",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {}
+    },
+    "W9": {
+        "name": "Quick Slash",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "MOUNTAIN",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {
+            "red":{
+                "BLANK":0
+            }
+        }
+    },
+    "W10": {
+        "name": "Quick Slash",
+        "colour": "blue",
+        "cost": 0,
+        "terrain": "ALL",
+        "ability": {
+            "DMG": 1
+        },
+        "combos": {}
+    }
+}
