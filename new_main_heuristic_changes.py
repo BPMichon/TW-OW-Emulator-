@@ -4,6 +4,7 @@ import json
 import copy
 from numpy import random
 import itertools
+from itertools import combinations
 
 
 
@@ -28,76 +29,7 @@ for location in locations:
         map_graph.add_edge(location["id"], neighbor)
 
 
-########################################################################################
-########################### PLAYING BOARD CODE #########################################
-########################################################################################
-# Need to change this so it can handle x players
 
-
-class Board:
-    def __init__(self, graph, players):
-        self.graph = graph
-        self.players = players
-    
-    def display(self):
-        for player in self.players:
-            print(f"{player.name} is at {self.graph.nodes[player.current_position]['name']} ({self.graph.nodes[player.current_position]['terrain']})")
-            ##print(f"Gold: {player.gold} , Cards: {[card.name for card in player.cards]}")
-            #p[player.state()
-            print()
-        
-    
-    # This is a basic adjacency moves
-    # def get_valid_moves(self, player):
-    #     return list(self.graph.neighbors(player.current_position))
-    
-
-
-    def move(self, player, new_pos):
-        if new_pos in player.get_valid_moves():
-            player.current_position = new_pos
-            return True
-        return False
-    
-    def start_game(self):
-        while True:
-            for player in self.players:
-
-                self.display()
-
-                if isinstance(player, AI):
-                    print(f"{player.name}'s turn...")
-
-                    ## Movement Phase
-                    ai_move = player.choose_move()
-                    if ai_move is not None:
-                        self.move(player, ai_move)
-
-                    ## Buying Phase
-                    
-                    market.buy_random(player)
-                    player.print_hand()
-
-                elif isinstance(player, Player):
-                    print(f"{player.name}'s turn! Choose a move:")
-
-                    ## Need to see all possible moves, for all 3 possible variations
-                    ## Valid Moves for spending 1 Location
-                    ## Valid Moves for spending 1 Location and 1 Gold
-
-
-                    moves = player.get_valid_moves()
-                    
-
-                    for i, move in enumerate(moves):
-                        print(f"{i}: Move to {self.graph.nodes[move]['name']}")
-
-                    choice = int(input("Enter move index: "))
-                    self.move(player, moves[choice])
-
-                    ## Buying Phase
-                    market.buy_random(player)
-                    player.print_hand()
 
 ########################################################################################
 ############################# CARD CODE ################################################
@@ -298,30 +230,32 @@ class Player:
         valid_moves = []
         neighbors = list(board.graph.neighbors(self.current_position))
 
-        # Option 1: Move by discarding a matching terrain card
+        # Option 1: Move by discarding a matching terrain card (consider all valid terrain cards)
         for neighbor in neighbors:
+            required_terrain = board.graph.nodes[neighbor]["terrain"]
 
-        # Access the terrain of the neighbor by using its ID
-            required_terrain = board.graph.nodes[neighbor]["terrain"]  # Get terrain of the neighbor by its ID
-    
-            weakest_terrain_card = self.weakest_card(self.hand, required_terrain)
-            if weakest_terrain_card:
-                valid_moves.append((neighbor, [weakest_terrain_card], 0))  # 0 gold cost
+            valid_terrain_cards = [card for card in self.hand if card.terrain == required_terrain]
+            for card in valid_terrain_cards:
+                valid_moves.append((neighbor, [card], 0))
 
-        # Option 2: Move by discarding any two cards
+        # Option 2: Move by discarding any two cards ( consider all 2-card combinations)
+        # Sometimes we could get 2 of the same cards ( needs checking )
         if len(self.hand) >= 2:
-            weakest_cards = sorted(self.hand, key=lambda card: sum(card.ability.get(effect, 0) for effect in ["DMG", "DRAW", "SHIELD"]))[:2]
-            for neighbor in neighbors:
-                valid_moves.append((neighbor, weakest_cards, 0))
+            for card1, card2 in combinations(self.hand, 2):
+                valid_moves.append((neighbor, [card1, card2], 0))   
 
-        # Option 3: Move by discarding 1 card + 1 gold (Still restricted to neighbors)
-        if self.gold >= 1 and len(self.hand) >= 1:
-            weakest_single_card = self.weakest_card(self.hand)
-            if weakest_single_card:
+        # Option 3: Move by discarding 1 card + 1 gold (consider all cards)
+        if self.gold >= 1:
+            for card in self.hand:
                 for neighbor in neighbors:
-                    valid_moves.append((neighbor, [weakest_single_card], 1))  #1 gold cost
+                    valid_moves.append((neighbor, [card], 1))
 
-        return list(valid_moves)
+        return sorted(valid_moves, key=lambda move: self.hand_strength_after(move[1]))
+    
+    def hand_strength_after(self, discarded_cards):
+        """Heuristic: Measures hand strength after discarding specific cards"""
+        remaining_hand = [card for card in self.hand if card not in discarded_cards]
+        return sum(card.ability.get("DMG", 0) + card.ability.get("DRAW", 0) + card.ability.get("SHIELD", 0) for card in remaining_hand)
     
     def state(self):
         for c in self.hand:
@@ -331,10 +265,25 @@ class Player:
         self.hand.append(card)
      
 
-    def draw(self,number=1):
+    ## We make sure deck cannot be under the certain amount and that it can be darwn from
+    def draw(self, number=1):
         for i in range(number):
-            card = self.deck.pop()
-            self.hand.append(card)
+
+            # If deck is empty, shuffle the discard pile into the deck
+            if not self.deck:
+                # If the discard pile is also empty, stop drawing
+                if not self.discard:
+                    break
+
+                # Shuffle the discard pile into the deck
+                self.deck = self.discard[:]
+                random.shuffle(self.deck)
+                self.discard.clear()  # Clear the discard pile
+
+            # Draw a card from the deck (if any cards are left)
+            if self.deck:
+                card = self.deck.pop()
+                self.hand.append(card)
 
     def take_dmg(self, number):
         for i in range(number):
@@ -572,17 +521,27 @@ class AI(Player):
         """Select the best combo based on the heuristic."""
         return max(combos, key=self.evaluate_combo)
 
+    ## We are changing this
+    # def choose_move(self):
 
-    def choose_move(self):
-
-        possible_moves = self.get_valid_moves()
-        if not possible_moves:
-            return None
+    #     possible_moves = self.get_valid_moves()
+    #     if not possible_moves:
+    #         return None
         
-        # Evaluate moves based on heuristic
-        best_move = max(possible_moves, key=lambda pos: heuristic(pos, board))
-        return best_move
+    #     # Evaluate moves based on heuristic
+    #     best_move = max(possible_moves, key=lambda pos: heuristic(pos, board))
+    #     return best_move
     
+    def choose_move(self):
+        ## tHIS WILL BE MY HEURISTICS CODE FOR CHOOSING FORM THE LIST OF POSSIBLE MOVES
+        possible_moves = self.get_valid_moves()
+
+        ## RN THE LIST GETS ORDERED WITH BEST MOVE ATOP, SO I JUST SELECT ONE MOVE
+        if possible_moves:
+            return possible_moves[0]
+        else:
+            return 
+
     def player_fight_turn(self,monster):
 
         print("Player Turn")
@@ -639,6 +598,140 @@ class AI(Player):
             if self.check_fight_status(monster):
                 break
 
+########################################################################################
+########################### PLAYING BOARD CODE #########################################
+########################################################################################
+# Need to change this so it can handle x players
+
+
+class Board:
+    def __init__(self, graph, players):
+        self.graph = graph
+        self.players = players
+    
+    def display(self):
+        for player in self.players:
+            print(f"{player.name} is at {self.graph.nodes[player.current_position]['name']} ({self.graph.nodes[player.current_position]['terrain']})")
+            ##print(f"Gold: {player.gold} , Cards: {[card.name for card in player.cards]}")
+            #p[player.state()
+            print()
+        
+    
+    # This is a basic adjacency moves
+    # def get_valid_moves(self, player):
+    #     return list(self.graph.neighbors(player.current_position))
+    
+
+
+    # def move(self, player, new_pos):
+    #     if new_pos in player.get_valid_moves():
+    #         player.current_position = new_pos
+    #         return True
+    #     return False
+
+    def move(self,player : Player, move):
+
+        for card in move[1]:
+            player.discard_card(card)
+        
+        player.gold =- move[2]
+
+        player.current_position = move[0]
+        
+    
+    def start_game(self):
+        while True:
+            for player in self.players:
+
+                self.display()
+
+                if isinstance(player, AI):
+                    print(f"{player.name}'s turn...")
+                    print(f"AI has {len(player.hand)} cards")
+
+                    ## Movement Phase
+                    ai_move = player.choose_move()
+                    if ai_move is not None:
+                        self.move(player, ai_move)
+
+
+                    ## Drawing Phase - Player Has to have 3 cards at this Step
+                    if len(player.hand) >= 3:
+                        pass
+                    elif len(player.hand) == 0:
+                        player.draw(3)
+                    elif len(player.hand) == 1:
+                        player.draw(2)
+                    elif len(player.hand) == 2:
+                        player.draw(1)
+                    else:
+                        #Do nothing John Snow
+                        pass
+
+                    print(f"AI has {len(player.hand)} cards")
+
+                    ## Buying Phase
+                    market.buy_random(player)
+                    player.print_hand()
+
+                elif isinstance(player, Player):
+                    print(f"{player.name}'s turn! Choose a move:")
+
+                    ## Need to see all possible moves, for all 3 possible variations
+                    ## Valid Moves for spending 1 Location
+                    ## Valid Moves for spending 1 Location and 1 Gold
+
+
+                    moves = player.get_valid_moves()
+                    
+
+                    for i, move in enumerate(moves):
+                        location_name = self.graph.nodes[move[0]]['name']
+                        num_cards = len(move[1])
+                        gold_cost = move[2]
+                        
+                        print(f"Move {i}:")
+                        print(f"  ➜ Destination: {location_name}")
+                        print(f"  ➜ Cost: {num_cards} card(s), {gold_cost} gold")
+                        
+                        if num_cards > 0:
+                            print("  ➜ Discarded Cards:")
+                            for card in move[1]:
+                                print(f"    - {card}")
+
+                        print("-" * 40)  # Separator for better readability
+
+                    choice = 0
+                    # Input loop to ensure valid move index
+                    while True:
+                        try:
+                            choice = int(input("Enter move index: "))
+                            if choice < 0 or choice >= len(moves):
+                                print("Invalid index. Please enter a valid move index.")
+                            else:
+                                break  # Valid input, exit the loop
+                        except ValueError:
+                            print("Invalid input. Please enter a number.")
+
+                    #choice = int(input("Enter move index: "))
+                    self.move(player, moves[choice])
+
+                    ## Drawing Phase - Player Has to have 3 cards at this Step
+                    if len(player.hand) >= 3:
+                        pass
+                    elif len(player.hand) == 0:
+                        player.draw(3)
+                    elif len(player.hand) == 1:
+                        player.draw(2)
+                    elif len(player.hand) == 2:
+                        player.draw(1)
+                    else:
+                        #Do nothing John Snow
+                        pass
+
+                    ## Buying Phase
+                    market.buy_random(player)
+                    player.print_hand()
 
 #######################################################################################
 ############################### Card Market ###########################################
@@ -705,25 +798,23 @@ AI_player = AI(name='AI', current_position=12,school="BEAR")
 
 
 
-
-
 ## This Code sets up the Monster to play Against
 Monster_1 = Monster("Hound", 10)
 Monster_1.initiate_fight()
 
 #AI_player.initiate_fight_monster(Monster_1)
 
-market.bank_print()
-market.buy_random(P1)
-market.bank_print()
+# market.bank_print()
+# market.buy_random(P1)
+# market.bank_print()
 
-P1.get_combos()
+# P1.get_combos()
 
 board = Board(graph=map_graph, players=[P1,AI_player])
 
-print("Valid Moves\n")
-cards = P1.get_valid_moves()
-for location in cards:
-    print(location)
+# print("Valid Moves\n")
+# cards = P1.get_valid_moves()
+# for location in cards:
+#     print(location)
 
 board.start_game()
