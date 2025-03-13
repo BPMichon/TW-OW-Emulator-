@@ -196,7 +196,6 @@ class Player:
         self.discard = []
         self.deck = []
         self.gold = gold
-        self.school = school
 
         ## Attributes Used for Leveling
         self.level = 1
@@ -237,11 +236,6 @@ class Player:
             self.Alchemy +=1
         elif stat == "SPECIALITY":
             self.Speciality +=1
-        elif stat == "SCHOOL":
-            ## Here you pay GOLD to level up STATS
-            ## Can only level up SPECIALITY if its your matching SCHOOL
-            pass
-
         else:
             print("Incorect Stat")
 
