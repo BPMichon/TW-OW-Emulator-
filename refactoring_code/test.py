@@ -22,9 +22,9 @@ market = board.MARKET()
 
 
 # Initialize Players and Board
-P1 = player_p.Player(name='P1',current_position= 1,school="WOLF")
-AI_player = player_p.AI(name='AI', current_position=12,school="BEAR")
-AI_player_2 = player_p.AI(name='AI', current_position=1,school="WOLF")
+P1 = player_p.Player(name='P1',current_position=1,school="WOLF")
+AI_player = player_p.AI(name='AI_BEAR', current_position=12,school="BEAR")
+AI_player_2 = player_p.AI(name='AI_WOLF', current_position=1,school="WOLF")
 
 
 ## This Code sets up the Monster to play Against
@@ -32,18 +32,26 @@ Monster_1 = player_p.Monster("Hound", 10)
 Monster_1.initiate_fight()
 
 #AI_player.initiate_fight_monster(Monster_1)
+
 # market.bank_print()
 # market.buy_random(P1)
 # market.bank_print()
 
 # P1.get_combos()
 
-board = board.Board(graph=board.map_graph, players=[AI_player_2,P1],market=market)
-board.display()
+board_g = board.Board(graph=board.map_graph, players=[AI_player,AI_player_2],market=market)
+#board.display()
+
+#board.display_monsters()
+# all_possible_moves = AI_player.get_valid_moves(board)
+# print(all_possible_moves)
+
+# move = AI_player.choose_move(board)
+# print(move)
 
 # print("Valid Moves\n")
 # cards = P1.get_valid_moves()
 # for location in cards:
 #     print(location)
-
-board.start_game()
+board.visual()
+board_g.start_game(10000)

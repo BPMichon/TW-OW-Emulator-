@@ -7,7 +7,8 @@ import itertools
 from itertools import combinations
 from tabulate import tabulate
 from card import load_cards , Card, ItemGraph
-#from main import 
+#import board
+
 
 
 ########################################################################################
@@ -35,9 +36,12 @@ class Monster:
             m = self.fight_deck.pop()
             return {"DMG": m}
 
-    def take_dmg(self,number):
+    def take_dmg(self, number):
         for i in range(number):
-            self.fight_deck.pop()
+            if self.fight_deck:  # Check if the deck is not empty
+                self.fight_deck.pop()
+            else:
+                break  # Stop if the deck is empty
 
     def is_alive(self):
         if len(self.fight_deck) < 1:
@@ -55,13 +59,18 @@ class Monster:
 # Player Class stores all information About Player
 class Player:
     def __init__(self,name, school, current_position, gold=2):
+        ## Heuristic Measures
+        self.visited_nodes = {}
+
+        self.school = school
         self.name = name
         self.current_position = current_position
         self.hand = []
         self.discard = []
         self.deck = []
         self.gold = gold
-
+        ## Win Condition 
+        self.victory_points = 0
         ## Attributes Used for Leveling
         self.level = 1
 
@@ -70,9 +79,9 @@ class Player:
         self.Alchemy = 1
         self.Speciality = 1
 
-
-
         self.alive = True
+
+        self.p3_draw_modifier = 0
 
         ## Create starter decks based on school
         if school == "WOLF":
@@ -85,21 +94,46 @@ class Player:
         
         else:
             pass
+        
 
         random.shuffle(self.deck)  # Shuffle deck
 
+        ## On Game Start, player draws 3 cards.
         for i in range(3):
             card = self.deck.pop()
             self.hand.append(card)
 
+    def hand_strength(self,hand):
+        return sum(card.ability.get("DMG", 0) + card.ability.get("DRAW", 0) + card.ability.get("SHIELD", 0) for card in hand)
+    
+    def visit_location(self, location):
+        if location in self.visited_nodes:
+            self.visited_nodes[location] += 1  # Increment count if already visited
+        else:
+            self.visited_nodes[location] = 1   # First visit
+            
+    #Increases player stats, and checks if a level up occured
     def UpStat(self,stat):
         if stat == "COMBAT":
+            ## Only Level up to 5
+            if self.Combat == 5:
+                print("Max Combat")
+                return
             self.Combat +=1
-        elif stat == "DEFENSE":#
+        elif stat == "DEFENSE":
+            if self.Defense == 5:
+                print("Max Defence")
+                return
             self.Defense +=1
         elif stat == "ALCHEMY":
+            if self.Alchemy == 5:
+                print("Max Alchemy")
+                return
             self.Alchemy +=1
         elif stat == "SPECIALITY":
+            if self.Speciality == 5:
+                print("Max Spelciality")
+                return
             self.Speciality +=1
         else:
             print("Incorect Stat")
@@ -108,7 +142,7 @@ class Player:
         if self.level < min(self.Alchemy, self.Defense, self.Combat, self.Speciality):
             self.level += 1
         
-
+    ## Returns all terrains in hand
     def terrain_hand(self):
         terrains = []
         card :Card
@@ -117,11 +151,13 @@ class Player:
 
         return terrains
 
+
     def print_hand(self):
         for card in self.hand:
             print(card)
         print("")
 
+    ## Get all valid moves for the player, and returns a array
     def get_valid_moves(self,board):
 
         valid_moves = []
@@ -147,7 +183,8 @@ class Player:
                 for neighbor in neighbors:
                     valid_moves.append((neighbor, [card], 1))
 
-        return sorted(valid_moves, key=lambda move: self.hand_strength_after(move[1]))
+        return valid_moves
+        #return sorted(valid_moves, key=lambda move: self.hand_strength_after(move[1]))
     
     def hand_strength_after(self, discarded_cards):
         """Heuristic: Measures hand strength after discarding specific cards"""
@@ -196,7 +233,7 @@ class Player:
                 # If both deck and hand are empty, the game is lost
                 return 
     
-
+    # This specifically moves all cards from hand e.g (you played the combo from your hand)
     def move_to_discard(self, combo):
         # Iterate through each card in the combo
         for card in combo:
@@ -343,44 +380,45 @@ class Player:
 
 
 
-    def evaluate_combo(cards: list):
-        if not cards:
-            return {"DMG": 0, "DRAW": 0, "SHIELD": 0, "LENGTH": 0}
+    # def evaluate_combo(cards: list):
+    #     if not cards:
+    #         return {"DMG": 0, "DRAW": 0, "SHIELD": 0, "LENGTH": 0}
 
-        damage = 0
-        draw = 0
-        shield = 0
-        combo_length = 1  # At least the first card is valid
+    #     damage = 0
+    #     draw = 0
+    #     shield = 0
+    #     combo_length = 1  # At least the first card is valid
 
-        # Apply the first card's effects
-        first_card = cards[0]
-        damage += first_card.ability.get("DMG", 0)
-        draw += first_card.ability.get("DRAW", 0)
-        shield += first_card.ability.get("SHIELD", 0)
+    #     # Apply the first card's effects
+    #     first_card = cards[0]
+    #     damage += first_card.ability.get("DMG", 0)
+    #     draw += first_card.ability.get("DRAW", 0)
+    #     shield += first_card.ability.get("SHIELD", 0)
 
-        # Iterate over the rest of the cards
-        for i in range(1, len(cards)):
-            prev_card = cards[i - 1]
-            current_card = cards[i]
+    #     # Iterate over the rest of the cards
+    #     for i in range(1, len(cards)):
+    #         prev_card = cards[i - 1]
+    #         current_card = cards[i]
 
-            # Check if the previous card has a valid combo with the current card
-            if current_card.colour not in prev_card.combos:
-                return {"DMG": 0, "DRAW": 0, "SHIELD": 0, "LENGTH": 0}  # Invalid combo
+    #         # Check if the previous card has a valid combo with the current card
+    #         if current_card.colour not in prev_card.combos:
+    #             return {"DMG": 0, "DRAW": 0, "SHIELD": 0, "LENGTH": 0}  # Invalid combo
 
-            # Apply the current card's effects
-            damage += current_card.ability.get("DMG", 0)
-            draw += current_card.ability.get("DRAW", 0)
-            shield += current_card.ability.get("SHIELD", 0)
-            combo_length += 1
+    #         # Apply the current card's effects
+    #         damage += current_card.ability.get("DMG", 0)
+    #         draw += current_card.ability.get("DRAW", 0)
+    #         shield += current_card.ability.get("SHIELD", 0)
+    #         combo_length += 1
 
-            # Apply the combo effect (if valid)
-            combo_effects = prev_card.combos[current_card.colour]
-            damage += combo_effects.get("DMG", 0)
-            draw += combo_effects.get("DRAW", 0)
-            shield += combo_effects.get("SHIELD", 0)
+    #         # Apply the combo effect (if valid)
+    #         combo_effects = prev_card.combos[current_card.colour]
+    #         damage += combo_effects.get("DMG", 0)
+    #         draw += combo_effects.get("DRAW", 0)
+    #         shield += combo_effects.get("SHIELD", 0)
 
-        return {"DMG": damage, "DRAW": draw, "SHIELD": shield, "LENGTH": combo_length}
+    #     return {"DMG": damage, "DRAW": draw, "SHIELD": shield, "LENGTH": combo_length}
 
+    ## Similar to move_to_discrd function
     def discard_card(self,card):
         self.hand.remove(card)  
         self.discard.append(card)  
@@ -416,6 +454,8 @@ class AI(Player):
     
     def choose_best_combo(self, combos):
         """Select the best combo based on the heuristic."""
+        if not combos:
+            return None
         return max(combos, key=self.evaluate_combo)
 
     ## We are changing this
@@ -428,24 +468,62 @@ class AI(Player):
     #     # Evaluate moves based on heuristic
     #     best_move = max(possible_moves, key=lambda pos: heuristic(pos, board))
     #     return best_move
+    def basic_heuristic(self,move,board):
+        location, cards_to_discard, gold_cost = move
+
+        # 1. Prioritize unvisited locations
+        visit_score = 1 if location not in self.visited_nodes else 0
+
+        # 2. Simulate new hand after discarding cards
+        future_hand = [card for card in self.hand if card not in cards_to_discard]
+
+        #Test Hand Strength
+        future_hand_score = self.hand_strength(future_hand)
+
+        # 4. Penalize moves that reduce hand strength too much
+        hand_penalty = -future_hand_score * 0.1  # Tune penalty weight
+
+        # 5. Penalize expensive moves
+        gold_penalty = -gold_cost * 0.1  # Tune cost weight
+
+        # 6. Prioritize Monster Location 
+        has_monster = board.graph.nodes[location]["monster"]
+        monster_bonus = 2 if has_monster else 0
+
+        return visit_score + hand_penalty + gold_penalty + monster_bonus
     
     def choose_move(self,board):
-        ## tHIS WILL BE MY HEURISTICS CODE FOR CHOOSING FORM THE LIST OF POSSIBLE MOVES
+
+        best_move = None
+        best_score = float('-inf')  # Higher is better
+
+        ## THIS WILL BE MY HEURISTICS CODE FOR CHOOSING FORM THE LIST OF POSSIBLE MOVES
         possible_moves = self.get_valid_moves(board)
 
         ## RN THE LIST GETS ORDERED WITH BEST MOVE ATOP, SO I JUST SELECT ONE MOVE
+        ## Lets Create a Heuristic for movement.
+        
         if possible_moves:
-            return possible_moves[0]
+             for move in possible_moves:
+                score = self.basic_heuristic(move,board)
+                if score > best_score:
+                    best_score = score
+                    best_move = move
+
+                return best_move
         else:
             return 
 
-    def player_fight_turn(self,monster):
+    def player_fight_turn(self,monster:Monster):
 
         print("Player Turn")
         combos = self.get_combos()
 
         # Choose best combo is based on the ai heuristic that is defined in the class
         chosen_combo = self.choose_best_combo(combos)
+        if chosen_combo == None:
+            print("No Cards Played")
+            return
         chosen_combo_values = self.evaluate_combo_2(chosen_combo)
         # Apply card effects to enemy (currently just damage)
         # Take cards from hand to discard
@@ -453,26 +531,26 @@ class AI(Player):
         self.move_to_discard(chosen_combo)
         self.draw(chosen_combo_values["DRAW"])
 
-    def monster_fight_turn(self,monster):
+    def monster_fight_turn(self,monster:Monster):
         print("Monster Turn")
 
         card = monster.play_top_card()
         self.take_dmg(card["DMG"])
 
-    def check_fight_status(self,monster):
+    def check_fight_status(self,monster:Monster):
         print(f"Current Player HP: {len(self.deck) + len(self.hand)}")
         print(f"Current Monster HP: {len(monster.fight_deck)}")
 
         if not monster.is_alive():
             print("Monster Lost")
-            return True
+            return 1
         if not self.is_alive():
             print("Player Lost")
-            return True
-        return False
+            return 2
+        return 0
 
     
-    def initiate_fight_monster(self, monster:Monster):
+    def  initiate_fight_monster(self, monster:Monster):
 
         # Lifepool gets created, all cards get shuffled into the deck, hand stays as it is
         for card in self.discard:
@@ -487,10 +565,14 @@ class AI(Player):
         # RN we going to do this based if the player is an AI, he is going to play the maximum combo from his hand
         
         while self.alive and monster.alive:
+            fight_status = 0
+
             self.player_fight_turn(monster)
-            if self.check_fight_status(monster):
-                break
+            fight_status = self.check_fight_status(monster)
+            if fight_status != 0:
+                return fight_status
 
             self.monster_fight_turn(monster)
-            if self.check_fight_status(monster):
-                break
+            fight_status = self.check_fight_status(monster)
+            if fight_status != 0:
+                return fight_status

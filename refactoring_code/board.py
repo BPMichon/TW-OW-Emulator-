@@ -9,6 +9,7 @@ from tabulate import tabulate
 import player_p
 #from player import Player, AI
 from card import load_cards, Card
+import matplotlib.pyplot as plt
 
 
 
@@ -30,18 +31,32 @@ for location in locations:
                        name=location["name"], 
                        terrain=location["terrain"],
                        school=location["school"],
-                       ability=location["loc_ability"])
+                       ability=location["loc_ability"],
+                       monster = [])
 
 for location in locations:
     for neighbor in location["adjacents"]:
         map_graph.add_edge(location["id"], neighbor)
 
 
+def visual():
+    plt.figure(figsize=(10, 6))
+    pos = nx.spring_layout(map_graph)  # Generates positions for the nodes
 
+    # Determine color based on terrain
+    node_colors = [
+        "blue" if data["terrain"] == "SEA" else
+        "green" if data["terrain"] == "FOREST" else
+        "gray" if data["terrain"] == "MOUNTAIN" else
+        "yellow"  # Default color for unknown terrain
+        for _, data in map_graph.nodes(data=True)
+    ]
 
+    nx.draw(map_graph, pos, with_labels=True, node_color=node_colors, edge_color='gray', node_size=3000, font_size=10)
+    #nx.draw_networkx_labels(map_graph, pos, labels={node: node for node in map_graph.nodes})
 
-    
-
+    plt.title("Game Map Graph (SEA = Blue, FOREST = Green, MOUNTAIN = Gray)")
+    plt.show()
 
 ########################################################################################
 ########################### PLAYING BOARD CODE #########################################
@@ -56,13 +71,58 @@ class Board:
     def __init__(self, graph, players, market):
         self.graph = graph
         self.players = players
-        self.market = market
+        self.market : MARKET = market
+       
+        self.monster_kills = 0
+
+    def make_monster(self):
+        monster = player_p.Monster("Hound", 10)
+        return monster
+        
+    def randomise_monsters(self):
+        terrains = ['FOREST','SEA','MOUNTAIN']
+        for ter in terrains:
+            self.spawn_monster(ter)
     
-    def display(self):
-        for player in self.players:
-            print(f"{player.name} is at {self.graph.nodes[player.current_position]['name']} ({self.graph.nodes[player.current_position]['terrain']})")
+    def spawn_monster(self,terrain):
+        forest_nodes = [x for x in self.graph.nodes if self.graph.nodes[x]["terrain"] == terrain]
+        if forest_nodes:  # Ensure there's at least one valid node
+            random_forest_location = random.choice(forest_nodes)
+            self.graph.nodes[random_forest_location]["monster"].append(self.make_monster())
+
+    def display_monsters(self):
+        monster_data = []
+        
+        for node_id, node_data in self.graph.nodes.items():
+            location_name = node_data.get("name", f"Unknown ({node_id})")
+            monsters = node_data.get("monster", [])
             
-            # Creating a table for stats
+            for monster in monsters:
+                monster_data.append([monster.name, location_name, f"({node_id})"])
+        
+        if monster_data:
+            print(tabulate(monster_data, headers=["Monster Name", "Location Name", "Node ID"], tablefmt="fancy_grid"))
+        else:
+            print("No monsters found in the world.")
+
+    def is_monster(self,location_id):
+        if self.graph.nodes[location_id]["monster"]:
+            return True
+        else:
+            return False
+
+
+    def display(self):
+        board_stats = [
+            ["Monster's Killed",self.monster_kills]
+        ]
+
+        print(tabulate(board_stats, tablefmt="fancy_grid"))
+
+        for player in self.players:
+            print(f"{player.name} is at ({player.current_position}){self.graph.nodes[player.current_position]['name']} ({self.graph.nodes[player.current_position]['terrain']})")
+            
+            
             stats = [
                 ["Level", player.level],
                 ["Alchemy", player.Alchemy],
@@ -70,11 +130,12 @@ class Board:
                 ["Combat", player.Combat],
                 ["Speciality", player.Speciality],
                 ["Gold", player.gold],
-                ["Cards", ", ".join(card.name for card in player.hand) if player.hand else "None"]
+                ["Cards", ", ".join(card.name for card in player.hand) if player.hand else "None"],
+                ["VICTORY POINTS",player.victory_points]
             ]
             
-            print(tabulate(stats, tablefmt="fancy_grid"))  # Pretty table output
-            print()  # Spacing
+            print(tabulate(stats, tablefmt="fancy_grid")) 
+            print()  
             
     def location_action(self,location_id,player :player_p.Player):
         ability = self.graph.nodes[location_id]["ability"]
@@ -96,8 +157,49 @@ class Board:
             if player.Speciality <= player.level:
                 player.UpStat("SPECIALITY")
                 ## Raise UpStat(speciality)
+        elif ability == "TRAIL":
+            player.gold += 1
+            # You gain a Quest with a random location, of a specific terrain, when you visit that location
+            # You gain 1 gold and get to flip a trail token (advantage for monster fight)
+            pass
+        elif ability == "SCHOOL":
+            # Here you may pay gold to upgrade your ability, cost depends on the current level of the ability
+            choices = []
+            school = self.graph.nodes[location_id]["school"]
+            
+            if player.Alchemy != 4 and player.Alchemy + 1 <= player.gold:
+                choices.append(("ALCHEMY", player.Alchemy + 1))
+            
+            if player.Defense != 4 and player.Defense + 1 <= player.gold:
+                choices.append(("DEFENSE", player.Defense + 1))
+            
+            if player.Combat != 4 and player.Combat + 1 <= player.gold:
+                choices.append(("COMBAT", player.Combat + 1))
+            
+            if player.Speciality != 4 and player.Speciality + 1 <= player.gold and player.school == school :
+                choices.append(("SPECIALITY", player.Speciality + 1))
+            
+            ## Choose at random which one to level up,
+            if choices:
+                stat,cost = random.choice(choices)
+
+                if stat == "ALCHEMY"  : player.Alchemy += 1
+                elif stat == "DEFENSE": player.Defense += 1
+                elif stat == "COMBAT" : player.Combat  += 1
+                elif stat == "SPECIALITY" : player.Speciality += 1
+
+                player.gold -= cost
+        elif ability == "GAMBLE":
+            if player.gold > 0:
+                num = random.randint(0,2)
+                if num == 0:
+                    player.gold += 2
+                else:
+                    player.gold -= 1
+            pass
         else:
-            print("location has no ability")
+            #print("location has no ability")
+            pass
 
         
 
@@ -121,53 +223,146 @@ class Board:
         player.gold =- move[2]
 
         player.current_position = move[0]
+        player.visit_location(move[0])
         
+    def explore(self,player:player_p.Player):
+
+        rng = random.randint(0,8)
+
+        if rng == 1:
+            player.gold += 1
+        elif rng == 2:
+            player.gold += 2
+        elif rng == 3: 
+            player.gold += 3
+        elif rng == 4:
+            player.gold -= 1
+        elif rng == 5:
+            player.gold -= 2
+        elif rng == 6:
+            player.p3_draw_modifier = 1
+        elif rng == 7:
+            player.p3_draw_modifier = -1
+        
+
+
+    def generate_phase_2(self,player):
+        ## Return all actions that the player can take 
+
+        ## Can Always Explore
+        valid_actions = ['explore']
+
+        ## If a monster is on same location
+        if self.is_monster(player.current_position):
+            valid_actions.append('monster')
+
+        ## If a unfought player is on same location
+
+        ## If a skill is MAX we can meditate
+
+        return valid_actions
+
+
     
-    def start_game(self):
+    def start_game(self,turn_number=100,debug=False):
+
+        ## Here I need to spawn in 3 monsters on the map
+        self.randomise_monsters()
+
+
+        turn = 0
         while True:
+            if turn_number == turn:
+                print("MAX TURN REACHED")
+                self.display()
+                #for player in self.players:
+                    
+                return
+
+            if debug : print(f"CURRENT TURN: {turn}")
+            if debug : self.display_monsters()
+            turn+= 1
             for player in self.players:
 
-                self.display()
+                if debug : self.display()
 
                 if isinstance(player, player_p.AI):
-                    print(f"{player.name}'s turn...")
-                    print(f"AI has {len(player.hand)} cards")
+                    if debug: print(f"{player.name}'s turn...")
+                    #print(f"AI has {len(player.hand)} cards")
 
-                    
-                    ## Movement Phase
+                    ## Phase 1
+
+                    ## Movement Phase -choose move might have heuristics for movement
                     ai_move = player.choose_move(self)
                     if ai_move is not None:
                         self.move(player, ai_move)
+                        
 
                     ## Action Phase
+                     ##Trigger Location Action
+
+
 
                     ## The player should be able to choose from a set of options at a location
                     ## Location Action
                     self.location_action(player.current_position,player)
+
+
                     ## Trail Quest
                     ## Gamble with other players??
 
-                    ## Drawing Phase - Player Has to have 3 cards at this Step
-                    if len(player.hand) >= 3:
-                        pass
-                    elif len(player.hand) == 0:
-                        player.draw(3)
-                    elif len(player.hand) == 1:
-                        player.draw(2)
-                    elif len(player.hand) == 2:
-                        player.draw(1)
-                    else:
-                        #Do nothing John Snow
-                        pass
+                    ## Phase 2
 
-                    print(f"AI has {len(player.hand)} cards")
+                    ## Choose one of the four
+                    ai_move = self.generate_phase_2(player)
+                    ## Choose at Random from these, 
+                    ## Future use Heuristic to determine based on future state
+
+                    if len(ai_move) == 2:
+                        ai_move_choice = ai_move[1]
+                    else:
+                        ai_move_choice = ai_move[0]
+
+
+
+                    #ai_move_choice = ai_move[1]
+                    if ai_move_choice == 'explore':
+                        self.explore(player)
+                    elif ai_move_choice == 'monster':
+                        monster:player_p.Monster = self.graph.nodes[player.current_position]["monster"][0]
+                        monster.initiate_fight()
+                        fight = player.initiate_fight_monster(monster)
+                        if fight == 1: ##Player WON
+                            player.victory_points += 1
+                            self.monster_kills += 1
+                            ## Generate a new monster
+                            self.graph.nodes[player.current_position]["monster"] = []
+                            self.spawn_monster(self.graph.nodes[player.current_position]["terrain"])
+
+                        elif fight == 2: ## Monster Won
+                            #Player gains Nothing
+                            pass
+
+                
+
+                    ## Drawing Phase - Player Has to have 3 cards at this Step
+                    required_cards = 3 + player.p3_draw_modifier
+
+                    while len(player.hand) < required_cards:
+                        player.draw(1)
+                    
+                    ##Reset Draw Modifier
+                    player.p3_draw_modifier = 0
+
+                    #print(f"AI has {len(player.hand)} cards")
 
                     ## Buying Phase
                     self.market.buy_random(player)
-                    player.print_hand()
+                    #player.print_hand()
 
                     ## Current Win Condition
-                    if player.level == 4:
+                    if player.victory_points == 4:
+                        self.display()
                         return(1)
 
                 elif isinstance(player, player_p.Player):
@@ -253,6 +448,31 @@ class Board:
 
 # with open("Game_Data/action_cards.json", "r") as f:
 #     action_cards = json.load(f)
+class TRAIL:
+    def __init__(self,player,board :Board):
+        self.terrain = self.generate_terrain(player,board)
+
+    
+    def generate_terrain(self,player,board :Board):
+        ## Randomly choose 0,1,2 
+        rng_loc = random.randint(0,3)
+        if rng_loc == 0:
+            ## FILTER locations by board.graph  == "FOREST"
+            ## if current location.terrain == "FOREST"
+            ##      REMOVE from pool
+            ## remove monster location on board.monsters[0].location
+            ##
+            ## pick random spot on map through this
+            pass
+        elif rng_loc == 1:
+            pass
+        elif rng_loc == 2:
+            pass
+
+        location = board.graph
+
+
+
 
 class MARKET:
     def __init__(self):
@@ -272,19 +492,47 @@ class MARKET:
             print(card)
         print("")
 
-    def buy_random(self, player: player_p.Player):
+    # def buy_random(self, player: player_p.Player):
         
-        random_card: Card = random.choice(self.bank)
+    #     random_card: Card = random.choice(self.bank)
+    #     for _ in range(random_card.cost):
+    #         player.discard_random()
+        
+    #     player.add_card(random_card)
+
+    #     bought_index = self.bank.index(random_card)
+    #     for i in range(bought_index, len(self.bank) - 1):
+    #         self.bank[i] = self.bank[i + 1]
+        
+    #     if self.deck:
+    #         self.bank[-1] = self.deck.pop()
+    #     else:
+    #         self.bank.pop()  # Remove last card if deck is empty
+
+    def buy_random(self, player: player_p.Player):
+        # Filter the bank to only include cards the player can afford
+        affordable_cards = [card for card in self.bank if len(player.hand) >= card.cost]
+
+        if not affordable_cards:  # If no affordable cards, exit the function
+            return  # Or raise an exception if needed
+
+        # Pick a random affordable card
+        random_card: Card = random.choice(affordable_cards)
+
+        # Discard the required number of cards
         for _ in range(random_card.cost):
             player.discard_random()
-        
+
+        # Add the purchased card to the player's deck
         player.add_card(random_card)
 
+        # Remove the bought card from the bank and shift remaining cards left
         bought_index = self.bank.index(random_card)
         for i in range(bought_index, len(self.bank) - 1):
             self.bank[i] = self.bank[i + 1]
-        
+
+        # Refill the bank from the deck if possible
         if self.deck:
             self.bank[-1] = self.deck.pop()
         else:
-            self.bank.pop()  # Remove last card if deck is empty
+            self.bank.pop()  # Remove last card if the deck is empty
