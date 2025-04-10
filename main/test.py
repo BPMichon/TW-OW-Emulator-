@@ -7,8 +7,10 @@ import itertools
 from itertools import combinations
 from tabulate import tabulate
 
+import locations
 import player_p
 import board
+import sampler
 #from player import Player, AI ,Monster
 #from board import MARKET,Board,map_graph
 
@@ -17,19 +19,25 @@ import board
 ################################# MAIN CODE ############################################
 ########################################################################################
 
-market = board.MARKET()
+
 # print(market.deck[0].state())
 
 
 # Initialize Players and Board
 P1 = player_p.Player(name='P1',current_position=1,school="WOLF")
+
+
+market = board.MARKET()
 AI_player = player_p.AI(name='AI_BEAR', current_position=12,school="BEAR")
+board_g = board.Board(graph=locations.GAME_MAP, players=[AI_player],market=market)
+
+
 AI_player_2 = player_p.AI(name='AI_WOLF', current_position=1,school="WOLF")
 
 
 ## This Code sets up the Monster to play Against
-Monster_1 = player_p.Monster("Hound", 10)
-Monster_1.initiate_fight()
+#Monster_1 = player_p.Monster("Hound", 10)
+#Monster_1.initiate_fight()
 
 #AI_player.initiate_fight_monster(Monster_1)
 
@@ -39,7 +47,7 @@ Monster_1.initiate_fight()
 
 # P1.get_combos()
 
-board_g = board.Board(graph=board.map_graph, players=[AI_player,AI_player_2],market=market)
+
 #board.display()
 
 #board.display_monsters()
@@ -53,5 +61,12 @@ board_g = board.Board(graph=board.map_graph, players=[AI_player,AI_player_2],mar
 # cards = P1.get_valid_moves()
 # for location in cards:
 #     print(location)
-board.visual()
-board_g.start_game(10000)
+
+##locations.visual()
+
+#print(board_g.start_game(20,game_stats=True))
+
+stats_summary = sampler.sample_games(num_samples=2000)
+#print(stats_summary)
+print(json.dumps(stats_summary, indent=4))
+

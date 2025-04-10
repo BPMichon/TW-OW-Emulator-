@@ -1,10 +1,15 @@
 # Emulator for Witcher:OldWorld
 
-# Update 14:29
+# Update 
 So I realised its probably better to do the board game options for players first, then from each choice the player makes we can generate a whole Board State, as well as possible Moves the player can Take.
 
 There is no point implementing choices for moves rn, since these should be managed by different Heuristics.
 
+# Update
+The curent Implementation has a choice tree for the AI at the different stages of play, the choices get evaluated using heuristics
+
+# Update
+A possible
 
 # Goal
 Currently focsuing on creating the Traversal part of the game that is present in **Phase 1 : Movement and Action**

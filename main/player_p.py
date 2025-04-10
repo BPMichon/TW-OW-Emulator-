@@ -7,8 +7,18 @@ import itertools
 from itertools import combinations
 from tabulate import tabulate
 from card import load_cards , Card, ItemGraph
+from collections import defaultdict
+
 #import board
 
+
+
+# def debug_print(*args, **kwargs):
+#     print(*args, **kwargs)  # Normal print behavior
+#     traceback.print_stack(limit=2)  # Print where it was called from
+
+# # Replace print with debug_print
+# print = debug_print
 
 
 ########################################################################################
@@ -73,6 +83,8 @@ class Player:
         self.victory_points = 0
         ## Attributes Used for Leveling
         self.level = 1
+        self.shield = 0
+        self.alchemyCards = 0
 
         self.Combat = 1
         self.Defense = 1
@@ -112,27 +124,40 @@ class Player:
         else:
             self.visited_nodes[location] = 1   # First visit
             
-    #Increases player stats, and checks if a level up occured
+    # Increases player shield, up to their Defense level
+    def UpShield(self, amount):
+        for _ in range(amount):
+            if self.shield < self.Defense:
+                self.shield += 1
+            else:
+                break  # Stop if shield is already at max
+
     def UpStat(self,stat):
         if stat == "COMBAT":
             ## Only Level up to 5
             if self.Combat == 5:
-                print("Max Combat")
+                #print("Max Combat")
                 return
             self.Combat +=1
         elif stat == "DEFENSE":
             if self.Defense == 5:
-                print("Max Defence")
+                #print("Max Defence")
                 return
             self.Defense +=1
+            self.UpShield(1)
+            
         elif stat == "ALCHEMY":
             if self.Alchemy == 5:
-                print("Max Alchemy")
+                #print("Max Alchemy")
                 return
             self.Alchemy +=1
+
+            if self.alchemyCards < 4:
+                self.alchemyCards += 1
+
         elif stat == "SPECIALITY":
             if self.Speciality == 5:
-                print("Max Spelciality")
+                #print("Max Spelciality")
                 return
             self.Speciality +=1
         else:
@@ -152,13 +177,13 @@ class Player:
         return terrains
 
 
-    def print_hand(self):
-        for card in self.hand:
-            print(card)
-        print("")
+    # def print_hand(self):
+    #     for card in self.hand:
+    #         print(card)
+    #     print("")
 
     ## Get all valid moves for the player, and returns a array
-    def get_valid_moves(self,board):
+    def get_valid_moves_all(self,board):
 
         valid_moves = []
         neighbors = list(board.graph.neighbors(self.current_position))
@@ -184,6 +209,46 @@ class Player:
                     valid_moves.append((neighbor, [card], 1))
 
         return valid_moves
+    
+    def get_valid_moves(self, board):
+        valid_moves = []
+        neighbors = list(board.graph.neighbors(self.current_position))
+
+        # Store moves by destination
+        moves_by_destination = defaultdict(list)
+
+        # Option 1: Move by discarding a matching terrain card (1 card, 0 gold)
+        for neighbor in neighbors:
+            required_terrain = board.graph.nodes[neighbor]["terrain"]
+            valid_terrain_cards = [card for card in self.hand if card.terrain == required_terrain]
+            for card in valid_terrain_cards:
+                moves_by_destination[neighbor].append((neighbor, [card], 0))
+
+        # Option 2: Move by discarding any two cards (2 cards, 0 gold)
+        if len(self.hand) >= 2:
+            for neighbor in neighbors:
+                for card1, card2 in combinations(self.hand, 2):
+                    # Check if either card individually allows a move to this neighbor
+                    can_card1_move = any(move[0] == neighbor and len(move[1]) == 1 and move[1][0] == card1 and move[2] == 0 for move in moves_by_destination[neighbor])
+                    can_card2_move = any(move[0] == neighbor and len(move[1]) == 1 and move[1][0] == card2 and move[2] == 0 for move in moves_by_destination[neighbor])
+
+                    if not can_card1_move and not can_card2_move:
+                        moves_by_destination[neighbor].append((neighbor, [card1, card2], 0))
+
+        # Option 3: Move by discarding 1 card + 1 gold (1 card, 1 gold)
+        if self.gold >= 1:
+            for neighbor in neighbors:
+                for card in self.hand:
+                    has_cheaper_card_move = any(m[0] == neighbor and len(m[1]) == 1 and m[1][0] == card and m[2] == 0 for m in moves_by_destination[neighbor])
+                    if not has_cheaper_card_move:
+                        moves_by_destination[neighbor].append((neighbor, [card], 1))
+
+        # Flatten the dictionary of moves into a single list
+        final_moves = []
+        for _, moves in moves_by_destination.items():
+            final_moves.extend(moves)
+
+        return final_moves
         #return sorted(valid_moves, key=lambda move: self.hand_strength_after(move[1]))
     
     def hand_strength_after(self, discarded_cards):
@@ -220,11 +285,16 @@ class Player:
                 self.hand.append(card)
 
     def take_dmg(self, number):
+        ## Make sure we take shield damage first before card damage. 
         for i in range(number):
-            if self.deck:
+            if self.shield > 0:
+                self.shield -= 1
+
+            elif self.deck:
                 # Discard from the deck if there are cards
                 card = self.deck.pop()
                 self.discard.append(card)
+
             elif self.hand:
                 # If deck is empty, discard from hand if there are cards
                 card = self.hand.pop()
@@ -419,9 +489,24 @@ class Player:
     #     return {"DMG": damage, "DRAW": draw, "SHIELD": shield, "LENGTH": combo_length}
 
     ## Similar to move_to_discrd function
-    def discard_card(self,card):
-        self.hand.remove(card)  
-        self.discard.append(card)  
+    # def discard_card(self,card):
+    #     self.hand.remove(card)  
+    #     self.discard.append(card)  
+
+    def discard_card(self, card : Card):
+    # Find the card with the same ID in self.hand
+        if self.hand:
+            c : Card = None
+            #print(self.hand)
+            for c in self.hand:
+                #print(c)
+                if c.id == card.id:  # Assuming Card has a 'card_id' attribute
+                    self.hand.remove(c)
+                    self.discard.append(c)
+                    return  # Exit once the card is found and removed
+            raise ValueError(f"Card with ID {card.id} not found in hand")
+        else:
+            print("Empty?")
 
     def discard_random(self):
         random_card :Card = random.choice(self.hand)
@@ -492,13 +577,40 @@ class AI(Player):
 
         return visit_score + hand_penalty + gold_penalty + monster_bonus
     
+    ## This Heuristic Evaluated the current Player State, this will make it
+    ##  so it is easier for us to evaluate how the player moves around the board
+
+    def PlayerStateHeuristic(self,board):
+        ## Different pouints should be weighted differently(GOLD IS IMPORTANT)
+        gold        = 1.2 * self.gold 
+        hand        = 0.8 * self.hand_strength(self.hand)
+        potions     = 0.5 * self.alchemyCards
+        shield      = 0.5 * self.shield
+
+        has_monster = board.graph.nodes[self.current_position]["monster"]
+        monster    = 2 if has_monster else 0
+
+        stats = (self.Alchemy * 0.1) + (self.Combat * 1) + (self.Defense * 1) + (self.Speciality * 0.2)
+        level = self.level * 3 #Level is Important the higher you get
+
+        visit_score = 3 if self.current_position not in self.visited_nodes else 0
+        if len(self.visited_nodes) == 10 : self.visited_nodes.clear()
+
+        
+
+        FinalScore = gold + hand + monster + stats + level + visit_score + potions + shield
+        return FinalScore
+
+
+
+    ## This Will be
     def choose_move(self,board):
 
         best_move = None
         best_score = float('-inf')  # Higher is better
 
         ## THIS WILL BE MY HEURISTICS CODE FOR CHOOSING FORM THE LIST OF POSSIBLE MOVES
-        possible_moves = self.get_valid_moves(board)
+        possible_moves = self.get_valid_moves_all(board)
 
         ## RN THE LIST GETS ORDERED WITH BEST MOVE ATOP, SO I JUST SELECT ONE MOVE
         ## Lets Create a Heuristic for movement.
@@ -516,36 +628,51 @@ class AI(Player):
 
     def player_fight_turn(self,monster:Monster):
 
-        print("Player Turn")
+        #print("Player Turn")
         combos = self.get_combos()
 
         # Choose best combo is based on the ai heuristic that is defined in the class
         chosen_combo = self.choose_best_combo(combos)
         if chosen_combo == None:
-            print("No Cards Played")
+            #print("No Cards Played")
             return
+        
         chosen_combo_values = self.evaluate_combo_2(chosen_combo)
         # Apply card effects to enemy (currently just damage)
         # Take cards from hand to discard
-        monster.take_dmg(chosen_combo_values["DMG"])
+
+        ## Simple implementation of alchemy
+        ## cards, when you get one it adds damage to your next attack.
+
+        if self.alchemyCards > 0:
+
+            monster.take_dmg(chosen_combo_values["DMG"] + self.alchemyCards)
+            self.alchemyCards = 0
+
+        else:
+            monster.take_dmg(chosen_combo_values["DMG"])
+            
+        # monster.take_dmg(chosen_combo_values["DMG"])
+
         self.move_to_discard(chosen_combo)
-        self.draw(chosen_combo_values["DRAW"])
+        self.UpShield(chosen_combo_values["SHIELD"])
+        self.draw(chosen_combo_values["DRAW"] + self.Combat)
 
     def monster_fight_turn(self,monster:Monster):
-        print("Monster Turn")
+        #print("Monster Turn")
 
         card = monster.play_top_card()
         self.take_dmg(card["DMG"])
 
     def check_fight_status(self,monster:Monster):
-        print(f"Current Player HP: {len(self.deck) + len(self.hand)}")
-        print(f"Current Monster HP: {len(monster.fight_deck)}")
+        #print(f"Current Player HP: {len(self.deck) + len(self.hand)}")
+        #print(f"Current Monster HP: {len(monster.fight_deck)}")
 
         if not monster.is_alive():
-            print("Monster Lost")
+            #print("Monster Lost")
             return 1
         if not self.is_alive():
-            print("Player Lost")
+            #print("Player Lost")
             return 2
         return 0
 

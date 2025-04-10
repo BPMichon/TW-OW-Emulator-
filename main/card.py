@@ -17,16 +17,62 @@ from tabulate import tabulate
 
 
 class Card:
-    def __init__(self, name, colour, cost , terrain, ability,combos):
-        self.name :str = name
-        self.colour:str = colour
-        self.cost:int = cost
-        self.terrain:str = terrain
-        self.ability:dict = ability
-        self.combos:dict = combos
+    def __init__(self, name, colour, cost , terrain, ability,combos,id):
+        self.id     :str    = id
+        self.name   :str    = name
+        self.colour :str    = colour
+        self.cost   :int    = cost
+        self.terrain:str    = terrain
+        self.ability:dict   = ability
+        self.combos :dict   = combos
 
+    # def __repr__(self):
+    #     return f"{self.colour} -> {', '.join(map(str, self.combos.keys()))}"
     def __repr__(self):
-        return f"{self.colour} -> {', '.join(map(str, self.combos.keys()))}"
+        colour_code = ""
+        reset_code = "\033[0m"
+        colour_circle = ""
+
+        if self.colour.lower() == "red":
+            colour_code = "\033[91m"  # Bright Red
+            colour_circle = "🔴"
+        elif self.colour.lower() == "blue":
+            colour_code = "\033[94m"  # Bright Blue
+            colour_circle = "🔵"
+        elif self.colour.lower() == "yellow":
+            colour_code = "\033[93m"  # Bright Yellow
+            colour_circle = "🟡"
+        elif self.colour.lower() == "purple":
+            colour_code = "\033[95m"  # Bright Magenta (often used for purple)
+            colour_circle = "🟣"
+        elif self.colour.lower() == "green":
+            colour_code = "\033[92m"  # Bright Green
+            colour_circle = "🟢"
+
+        combo_str_parts = []
+        for key in self.combos.keys():
+            combo_colour_code = ""
+            combo_shape = ""
+            if key.lower() == "red":
+                combo_colour_code = "\033[91m"
+                combo_shape = "🟥"
+            elif key.lower() == "blue":
+                combo_colour_code = "\033[94m"
+                combo_shape = "🟦"
+            elif key.lower() == "yellow":
+                combo_colour_code = "\033[93m"
+                combo_shape = "🟨"
+            elif key.lower() == "purple":
+                combo_colour_code = "\033[95m"
+                combo_shape = "🟪"
+            elif key.lower() == "green":
+                combo_colour_code = "\033[92m"
+                combo_shape = "🟩"
+            combo_str_parts.append(f"{combo_colour_code}{combo_shape}{reset_code}")
+
+        combo_str = ", ".join(combo_str_parts)
+
+        return f"{colour_code}{colour_circle}{reset_code} -> {combo_str}"
     
     #Returns list of colours that it combos with 
     def combo_colours():
@@ -66,12 +112,13 @@ def load_cards(path):
         # Convert JSON data into Card objects
         for card_id, data in cards.items():
             card = Card(
-                name=data["name"],
-                colour=data["colour"],
-                cost=data["cost"],
-                terrain=data["terrain"],
-                ability=data["ability"],
-                combos=data["combos"]
+                name    =data["name"],
+                colour  =data["colour"],
+                cost    =data["cost"],
+                terrain =data["terrain"],
+                ability =data["ability"],
+                combos  =data["combos"],
+                id      =card_id
             )
             card_array.append(card)
 
