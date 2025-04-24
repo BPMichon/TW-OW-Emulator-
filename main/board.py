@@ -1,6 +1,6 @@
 import networkx as nx
-import random
-from numpy import random
+import random 
+#from numpy import random
 from tabulate import tabulate
 import player_p
 from card import load_cards, Card
@@ -24,22 +24,22 @@ class Board:
         self.stats = {"GameWon" : 0, "MonstersKilled" : 0, "TurnTaken" : 0}
 
     # Returns a Monster to generate, UPDATE to have 3 dificulties of monsters
-    def make_monster(self):
-        monster = player_p.Monster("Hound", 10)
+    def make_monster(self,difficulty):
+        monster = player_p.Monster(f"{difficulty} Hound", 12,difficulty=difficulty)
         return monster
     
     # Randomise the Spawns of Monsters
     def randomise_monsters(self):
         terrains = ['FOREST','SEA','MOUNTAIN']
         for ter in terrains:
-            self.spawn_monster(ter)
+            self.spawn_monster(ter,"easy")
 
     # Creates a monster in a specific terrain
-    def spawn_monster(self,terrain):
+    def spawn_monster(self,terrain,difficulty):
         forest_nodes = [x for x in self.graph.nodes if self.graph.nodes[x]["terrain"] == terrain]
         if forest_nodes:  # Ensure there's at least one valid node
             random_forest_location = random.choice(forest_nodes)
-            self.graph.nodes[random_forest_location]["monster"].append(self.make_monster())
+            self.graph.nodes[random_forest_location]["monster"].append(self.make_monster(difficulty=difficulty))
 
     # DisplaYS ALL alive monsters
     def display_monsters(self):
@@ -200,9 +200,12 @@ class Board:
         # player.visit_location(move[0])
 
     ## Uses the explore functionality of the boardgame  
-    def explore(self,player:player_p.Player):
-
-        rng = random.randint(0,8)
+    def explore(self, player:player_p.Player, RNG= True, choice = 0):
+        if RNG:
+            rng = random.randint(0,10)
+        else:
+            rng = choice
+        ## The following effects alter the player gold amounts 
 
         if rng == 1:
             player.gold += 1
@@ -210,14 +213,28 @@ class Board:
             player.gold += 2
         elif rng == 3: 
             player.gold += 3
+
         elif rng == 4:
             player.gold -= 1
         elif rng == 5:
             player.gold -= 2
+
+        ## The following effects alter the amount cards drawn in phase 3
         elif rng == 6:
             player.p3_draw_modifier = 1
         elif rng == 7:
             player.p3_draw_modifier = -1
+
+        ## The following may raise your attribute by 1
+
+        elif rng == 8:
+            ## How the game logick works, if you have to pay a cost, and you do not have the required amount you still get the bonus
+            player.discard_random()
+            player.Alchemy += 1
+
+        elif rng == 9:
+            player.Alchemy -= 1
+
         
     # Generates all valid action for phase 2
     def generate_phase_2(self,player):
@@ -235,6 +252,75 @@ class Board:
         ## If a skill is MAX we can meditate
 
         return valid_actions
+    
+    def explore_evaluation(self, player):
+        # We take the current player state, for each possible outrcome in the explore actions we then 
+        score = 0
+
+        ## This way we go through each possibility of the random roll, and weight it by its proibability
+        ## With 10 items the weighting is P = 0.1.
+
+
+        for i in range(0,10):
+
+            player_copy: player_p.AI = copy.deepcopy(player)
+            self.explore(player_copy,RNG=False,choice=i)
+            
+            state_score = player_copy.PlayerStateHeuristic(self)
+            score += ( state_score/10 )
+
+        print(f"Exploration: {score}")
+        return score
+
+    def combat_evaluation(self, player,difficulty):
+
+        ### Need to calculate the win ratio simulation for the player 
+        player_won = 0
+        player_lost = 0
+        
+        
+
+        for i in range(0,100):
+
+            ## This makes the monster ready to fight.
+            monster = player_p.Monster("SampleMonster", 10,difficulty=difficulty)
+            monster.initiate_fight()
+            player_copy :player_p.AI = copy.deepcopy(player)
+            fight = player_copy.initiate_fight_monster(monster)
+            ##print(f"Fight Outcome is {fight} !!!")
+            if fight == 1: ##Player WON
+                player_won += 1
+
+            elif fight == 2: ## Monster Won
+               player_lost += 1
+
+        ## Evaluate the Winning State
+        player_copy:player_p.AI = copy.deepcopy(player)
+
+        player_copy.victory_points += 1
+        player_copy.gold += 2
+
+        PlayerWon = player_copy.PlayerStateHeuristic(self)
+
+        ## Evaluate the Losing State
+
+        PlayerLost = player.PlayerStateHeuristic(self)
+
+        ## Combine the Scores
+        
+        print(f"PlayerWon: {player_won}, PlayerLost: {player_lost}")
+        FinalScore = ( PlayerWon * (player_won / (player_won + player_lost))) + ( PlayerLost * (player_lost / (player_lost + player_won)))
+        print(f"Combat Score: {FinalScore}")
+        return FinalScore
+
+
+            
+
+
+    def meditate_evaluation(self, player):
+        pass
+
+
 
     # def simulate_move(self, player, max_depth, current_depth=0):
     #     # Base case: if we've reached the maximum depth, return the heuristic score
@@ -337,7 +423,7 @@ class Board:
                         if AI_MOVES:
                             for move in AI_MOVES:
                                 # Copy the current Player State
-                                player_copy = copy.deepcopy(player)
+                                player_copy : player_p.AI = copy.deepcopy(player)
 
                                 # Apply the move and execute the action
                                 self.move(player_copy, move)
@@ -397,18 +483,34 @@ class Board:
 
                     ## A flag that will let us determine, if we wnat to fight the enemy
                     ## Based on current player Strength + Cards
-                    FIGHT = False
+                    #FIGHT = False
+                    ai_move_choice = None
 
                     while len(player.hand) > 0:
                         
                         ## First Check if the Monster is Here
-
+                        ## If a monster is here - we then stop moving
                         if self.is_monster(player.current_position):
-                            playerStrength = (len(player.hand) * 3) + ( len(player.discard) + len(player.deck) )
+                            ##playerStrength = (len(player.hand) * 3) + ( len(player.discard) + len(player.deck) )
                             ## Arbitary Value RN, but it lets us decide if a monster is on the section
-                            if playerStrength > 20:
-                                FIGHT = True
+                            # if playerStrength > 20:
+                            #     FIGHT = True
+                            #     break
+
+
+                            ## I ask the Action Agent if he wants to fight ()
+                            ## If yes i break and go to phase 2
+                            ## If not I would rather keep exploring using cards, since exploration is the same noi matter what
+                            monster:player_p.Monster = self.graph.nodes[player.current_position]["monster"][0]
+                            combat_score = self.combat_evaluation(player,monster.difficulty)
+                            explore_score = self.explore_evaluation(player)
+
+                            if combat_score > explore_score:
+                                ai_move_choice = "monster"
                                 break
+                            else:
+                                pass
+
 
                         move_score,chosen_move = simulate_move(player,3,0)
                         ##Finaly we have a correct move to make
@@ -420,6 +522,8 @@ class Board:
 
                         self.move(player,chosen_move,False)
                         self.location_action(player.current_position,player)
+                        
+                        ai_move_choice = "explore"
                     
                     #print("Finished Moving")
 
@@ -439,36 +543,79 @@ class Board:
                     ## Phase 2
 
                     ## Choose one of the four
-                    ai_move = self.generate_phase_2(player)
-                    ## Choose at Random from these, 
-                    ## Future use Heuristic to determine based on future state
+                    ## Create a Evaluation Function for the Explore
 
-                    if len(ai_move) == 2 and FIGHT == True:
-                        ai_move_choice = ai_move[1]
-                        #print("FIGHT MONSTER")
-                    else:
-                        ai_move_choice = ai_move[0]
-                        #print("EXPLORE")
 
+                    # ai_move = self.generate_phase_2(player)
+                    # ## Choose at Random from these, 
+                    # ## Future use Heuristic to determine based on future state
+
+                    # if len(ai_move) == 2 and FIGHT == True:
+                    #     ai_move_choice = ai_move[1]
+                    #     #print("FIGHT MONSTER")
+                    # else:
+                    #     ai_move_choice = ai_move[0]
+                    #     #print("EXPLORE")
+
+                    #ai_move_choice = None
+
+                    ## We need to compare the RANDOMNESS from the explore vents
+                    ## Given current player state, we clone each state.
+                    
+                    #For each possible explore option we weight it by the total number of choices
+
+                    #For fights we simulate a number of games, and then extrapolate a winrate from the win-ratio
+
+                    # explore_score = self.explore_evaluation(player)
+                    # combat_score = 0
+                    # #meditate_score = self.meditate_evaluation(player)
+
+                    # if FIGHT == True:
+                    #     monster:player_p.Monster = self.graph.nodes[player.current_position]["monster"][0]
+                    #     combat_score = self.combat_evaluation(player,monster.difficulty)
+
+                    #     if combat_score > explore_score:
+                    #         ai_move_choice = 'monster'
+                    #     else:
+                    #         ai_move_choice = "explore"
+
+                    # elif explore_score > combat_score or FIGHT == False:
+                    #     ai_move_choice = 'explore'
 
 
                     #ai_move_choice = ai_move[1]
                     if ai_move_choice == 'explore':
+
                         self.explore(player)
+
                     elif ai_move_choice == 'monster':
                         monster:player_p.Monster = self.graph.nodes[player.current_position]["monster"][0]
                         monster.initiate_fight()
+                        new_difficulty = None
 
-                        fight = player.initiate_fight_monster(monster)
+                        if monster.difficulty == "easy":
+                            new_difficulty = "medium"
+
+                        elif monster.difficulty == "medium":
+                            new_difficulty = "hard"
+
+                        elif monster.difficulty == "hard":
+                            new_difficulty = "hard"
+
+
+                        fight = player.initiate_fight_monster(monster,debug = True)
+
                         if fight == 1: ##Player WON
                             player.victory_points += 1
+                            player.gold += 2
                             self.monster_kills += 1
                             ## Generate a new monster
                             self.graph.nodes[player.current_position]["monster"] = []
-                            self.spawn_monster(self.graph.nodes[player.current_position]["terrain"])
+                            self.spawn_monster(self.graph.nodes[player.current_position]["terrain"],new_difficulty)
 
                         elif fight == 2: ## Monster Won
                             #Player gains Nothing
+                            #Player gets a extra card
                             pass
 
                 
@@ -592,33 +739,104 @@ class Board:
 
                         #choice = int(input("Enter move index: "))
                         self.move(player, moves[choice])
+                        self.location_action(player.current_position,player)
+
+
 
                     ## PHASE 2
+                    phase_2 = ['explore']
+
+                    if self.is_monster(player.current_position):
+                        phase_2.append('fight')
 
 
-                    ## The player should be able to choose from a set of options at a location
-                    ## Location Action
-                    self.location_action(player.current_position,player)
-                    ## Trail Quest
-                    ## Gamble with other players??
+                    for index, x in enumerate(phase_2):
+                        print(f"{index}. {x}")
 
+                    while True:
+                        try:
+                            choice = int(input("Enter move index: "))
+                            if choice < 0 or choice >= len(phase_2):
+                                print("Invalid Index. Please enter a valid move index. ")
+                            else:
+                                break
+
+                        except ValueError:
+                            print("Invalid input. Please enter a number.")
+
+                   
+                    if choice == 0:
+
+                        self.explore(player)
+
+                    elif choice == 1:
+
+                        monster:player_p.Monster = self.graph.nodes[player.current_position]["monster"][0]
+                        monster.initiate_fight()
+                        new_difficulty = None
+
+                        if monster.difficulty == "easy":
+                            new_difficulty = "medium"
+
+                        elif monster.difficulty == "medium":
+                            new_difficulty = "hard"
+
+                        elif monster.difficulty == "hard":
+                            new_difficulty = "hard"
+
+
+                        fight = player.initiate_fight_monster_human(monster,debug = True)
+
+                        if fight == 1: ##Player WON
+                            player.victory_points += 1
+                            player.gold += 2
+                            self.monster_kills += 1
+                            ## Generate a new monster
+                            self.graph.nodes[player.current_position]["monster"] = []
+                            self.spawn_monster(self.graph.nodes[player.current_position]["terrain"],new_difficulty)
+
+                        elif fight == 2: ## Monster Won
+                            #Player gains Nothing
+                            #Player gets a extra card
+                            pass
+
+
+
+
+
+
+
+                    while len(player.hand) > 3:
+                        player.discard_card(player.weakest_card(player.hand))
 
                     ## Drawing Phase - Player Has to have 3 cards at this Step
-                    if len(player.hand) >= 3:
-                        pass
-                    elif len(player.hand) == 0:
-                        player.draw(3)
-                    elif len(player.hand) == 1:
-                        player.draw(2)
-                    elif len(player.hand) == 2:
+                    required_cards = 3 + player.p3_draw_modifier
+
+                    while len(player.hand) < required_cards:
                         player.draw(1)
-                    else:
-                        #Do nothing John Snow
-                        pass
+                    
+                    ## Reset Draw Modifier
+                    player.p3_draw_modifier = 0
+
+                    #print(f"AI has {len(player.hand)} cards")
 
                     ## Buying Phase
                     self.market.buy_random(player)
-                    player.print_hand()
+                    #player.print_hand()
+
+                    ## Current Win Condition
+                    if player.victory_points == 5:
+                        if debug : self.display()
+                        if game_stats:
+
+                            #self.stats = {"GameWon" : 0, "MonstersKilled" : 0, "TurnTaken" : 0}
+                            self.stats["MonstersKilled"] = self.monster_kills
+                            self.stats["TurnTaken"] = turn
+                            self.stats["GameWon"] = 1
+
+                            return self.stats
+                        else:
+                            return(1)
 
 
 

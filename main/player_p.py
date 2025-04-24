@@ -9,35 +9,32 @@ from tabulate import tabulate
 from card import load_cards , Card, ItemGraph
 from collections import defaultdict
 
-#import board
-
-
-
-# def debug_print(*args, **kwargs):
-#     print(*args, **kwargs)  # Normal print behavior
-#     traceback.print_stack(limit=2)  # Print where it was called from
-
-# # Replace print with debug_print
-# print = debug_print
-
-
-########################################################################################
 ############################    MONSTER CODE   #########################################
-########################################################################################
+
 class Monster:
-    def __init__(self,name,health):
+    def __init__(self,name,health, difficulty):
         self.name = name
         self.health = health
         self.hp_deck = []
         self.fight_deck = []
         self.alive = True
+        self.difficulty = difficulty
 
-        for i in range(self.health):
-            rnd_val = random.randint(3,6)
-            self.hp_deck.append(rnd_val)
+        self.easy_hp =   [4,4, 3,3, 4,4, 5,5, 6,6,  5,5] #12
+        self.medium_hp = [4,4, 3,3, 4,4, 5,5, 6,6,  5,5, 5,5, 3,3] #16
+        self.hard_hp =   [4,4, 3,3, 4,4, 5,5, 6,6,  5,5, 5,5, 3,3, 6,6, 4,4] #20
     
     def initiate_fight(self):
-        self.fight_deck = copy.deepcopy(self.hp_deck)
+        self.fight_deck = []
+
+        if self.difficulty == "easy":
+            self.fight_deck = copy.deepcopy(self.easy_hp)
+        elif self.difficulty == "medium":
+            self.fight_deck = copy.deepcopy(self.medium_hp)
+        elif self.difficulty == "hard":
+           self.fight_deck = copy.deepcopy(self.hard_hp)
+
+        random.shuffle(self.fight_deck)
 
     def play_top_card(self):
         if not self.fight_deck:
@@ -60,11 +57,7 @@ class Monster:
         else:
             return True
 
-
-
-########################################################################################
 #############################   PLAYER CODE    #########################################
-########################################################################################
 
 # Player Class stores all information About Player
 class Player:
@@ -91,6 +84,8 @@ class Player:
         self.Alchemy = 1
         self.Speciality = 1
 
+        self.SpecialityUsed = False
+
         self.alive = True
 
         self.p3_draw_modifier = 0
@@ -114,6 +109,151 @@ class Player:
         for i in range(3):
             card = self.deck.pop()
             self.hand.append(card)
+
+    def monster_fight_turn(self,monster:Monster):
+        #print("Monster Turn")
+
+        card = monster.play_top_card()
+        self.take_dmg(card["DMG"])
+
+    def check_fight_status(self,monster:Monster, debug = False):
+        if debug: 
+            print(" ")
+            print(f"Current Player HP: {len(self.deck) + len(self.hand)}")
+            print(f"Current Monster HP: {len(monster.fight_deck)}")
+
+        if not monster.is_alive():
+            #print("Monster Lost")
+            return 1
+        if not self.is_alive():
+            #print("Player Lost")
+            return 2
+        
+        return 0
+
+    def valid_combo(self,cards):
+        if not cards:
+            return False
+
+        # Iterate over the rest of the cards
+        for i in range(1, len(cards)):
+            prev_card = cards[i - 1]
+            current_card = cards[i]
+
+            # Check if the current card's colour is in the previous card's combo list
+            if current_card.colour not in prev_card.combos:
+                return False  # Invalid combo
+
+        return True  # All pairs are valid combos
+    def player_fight_turn_human(self,monster:Monster):
+        ## Speciality Checks - Bear Speciality should be checked at the start of player turn.
+
+        if self.school == "Bear" and self.shield == 0 and self.SpecialityUsed == False:
+            
+            #Progresiion for each speciality Level
+            bear_progression = [ [0,0], [0,1], [1,1], [1,2], [2,2], [2,2] ]
+            ## Bear Draws cards depending on his speciality level
+            #self.draw(bear_progression[self.Speciality][1])
+            self.draw_in_combat(bear_progression[self.Speciality][1])
+            self.UpShield(bear_progression[self.Speciality][0])
+
+
+            self.SpecialityUsed = True
+
+        print("Your hand:")
+        for i, card in enumerate(self.hand):
+            print(f"{i}: {card}")
+
+        # Ask for input
+        user_input = input("Enter the indices of the cards you want to play, separated by commas (e.g. 0,2,3): ")
+
+        try:
+            # Parse the indices
+            indices = [int(i.strip()) for i in user_input.split(",")]
+
+            # Construct the card combo from the hand using the indices
+            selected_cards = [self.hand[i] for i in indices]
+
+            # Check if the selected combo is valid
+            if self.valid_combo(selected_cards):
+                print("You played a valid combo:", selected_cards)
+                # Remove cards from hand or process as needed
+            else:
+                print("Invalid combination of cards. Please try again.")
+
+        except (ValueError, IndexError):
+            print("Invalid input. Make sure you enter valid card indices separated by commas.")
+       
+        
+        chosen_combo_values = self.evaluate_combo_2(selected_cards)
+        # Apply card effects to enemy (currently just damage)
+        # Take cards from hand to discard
+
+        ## Simple implementation of alchemy
+        ## cards, when you get one it adds damage to your next attack.
+
+        if self.alchemyCards > 0:
+
+            monster.take_dmg(chosen_combo_values["DMG"] + self.alchemyCards)
+            self.alchemyCards = 0
+
+        else:
+            monster.take_dmg(chosen_combo_values["DMG"])
+
+
+        ## Wolf Speciality
+        if self.school == "Wolf" and len(selected_cards) > 3  and self.SpecialityUsed == False:
+            #Progresiion for each speciality Level
+            wolf_progression = [ [0,0], [1,0], [1,1], [1,2], [2,2], [2,2] ]
+            ## Wolf deals damage based on Speciality.
+            self.draw_in_combat(wolf_progression[self.Speciality][1])
+            monster.take_dmg(wolf_progression[self.Speciality][0])
+
+            self.SpecialityUsed = True
+            
+        # monster.take_dmg(chosen_combo_values["DMG"])
+
+        self.move_to_discard(selected_cards)
+        self.UpShield(chosen_combo_values["SHIELD"])
+        self.draw_in_combat(chosen_combo_values["DRAW"] + self.Combat)
+
+    def initiate_fight_monster_human(self, monster:Monster, debug = False):
+
+        # Reset Speciality (One speciality can be used per combat)
+        self.SpecialityUsed = False
+        ## Make Sure player is alive in combat
+        self.alive = True
+        monster.alive = True
+
+        # Lifepool gets created, all cards get shuffled into the deck, hand stays as it is
+        for card in self.discard:
+            c = self.discard.pop()
+            self.deck.append(c)
+
+        random.shuffle(self.deck)
+        monster.initiate_fight()
+        # Cards in deck are treated as HP.
+
+        # RN not implementing the trail, player goes first
+        # player has to return a array of the cards he wants to play
+        # RN we going to do this based if the player is an AI, he is going to play the maximum combo from his hand
+        
+        while self.alive and monster.alive:
+
+            fight_status = 0
+            fight_status = self.check_fight_status(monster,debug)
+
+            self.monster_fight_turn(monster)
+            fight_status = self.check_fight_status(monster,debug)
+            
+            if fight_status != 0:
+                return fight_status
+
+            self.player_fight_turn_human(monster)
+            fight_status = self.check_fight_status(monster,debug)
+
+            if fight_status != 0:
+                return fight_status
 
     def hand_strength(self,hand):
         return sum(card.ability.get("DMG", 0) + card.ability.get("DRAW", 0) + card.ability.get("SHIELD", 0) for card in hand)
@@ -176,11 +316,6 @@ class Player:
 
         return terrains
 
-
-    # def print_hand(self):
-    #     for card in self.hand:
-    #         print(card)
-    #     print("")
 
     ## Get all valid moves for the player, and returns a array
     def get_valid_moves_all(self,board):
@@ -318,7 +453,7 @@ class Player:
         ## Draw x number of cards, up to hand limmit 7
         for i in range(number_to_draw):
 
-            if len(self.deck > 0):            
+            if len(self.deck) > 0:            
                 if len(self.hand) < 7:
                     card = self.deck.pop()
                     self.hand.append(card)
@@ -352,44 +487,7 @@ class Player:
     # Return the weakest card based on its ability effects
         return min(filtered_cards, key=card_strength, default=None)
 
-    # def initiate_fight_monster(self, monster:Monster):
-
-    #     # Lifepool gets created, all cards get shuffled into the deck, hand stays as it is
-    #     for card in self.discard:
-    #         c = self.discard.pop()
-    #         self.deck.append(c)
-
-    #     random.shuffle(self.deck)
-    #     # Cards in deck are treated as HP.
-
-    #     # RN not implementing the trail, player goes first
-    #     # player has to return a array of the cards he wants to play
-    #     # RN we going to do this based if the player is an AI, he is going to play the maximum combo from his hand
-        
-    #     while (self.alive == True or monster.alive == True ):
-           
-    #         #We now have an array of all cnbinations
-    #         combos = self.get_combos()
-
-    #         chosen_combo = []
-    #         for combo in combos:
-    #             combo_vals = self.evaluate_combo_2(combo)
-    #             ## This Heuristic will change depending on different AI, rn we just looking for the longest combo
-
-
-
-    #         ## we calculate the effects and then the following occurs
-
-    #         if monster.is_alive():
-    #         # enemy turn
-    #             pass
-
-    #         if self.is_alive():
-    #             pass
-
-
-
-
+  
     ## This is too long, I want to break this up into Evaluating if a pair is valid, and then a function that given a sequence is vbalid calculates the combo
     def get_combos(self):
         combinations = list(itertools.permutations(self.hand,2 ))
@@ -509,8 +607,10 @@ class Player:
             print("Empty?")
 
     def discard_random(self):
-        random_card :Card = random.choice(self.hand)
-        self.discard_card(random_card)
+        if self.hand:
+            random_card :Card = random.choice(self.hand)
+            self.discard_card(random_card)
+        
 
 
    # Heuristic function (AI chases the player, currently only works for 1 player)
@@ -581,7 +681,8 @@ class AI(Player):
     ##  so it is easier for us to evaluate how the player moves around the board
 
     def PlayerStateHeuristic(self,board):
-        ## Different pouints should be weighted differently(GOLD IS IMPORTANT)
+        ## Different pouints should be weighted differently (GOLD IS IMPORTANT)
+
         gold        = 1.2 * self.gold 
         hand        = 0.8 * self.hand_strength(self.hand)
         potions     = 0.5 * self.alchemyCards
@@ -591,7 +692,7 @@ class AI(Player):
         monster    = 2 if has_monster else 0
 
         stats = (self.Alchemy * 0.1) + (self.Combat * 1) + (self.Defense * 1) + (self.Speciality * 0.2)
-        level = self.level * 3 #Level is Important the higher you get
+        level = self.level * 3 #Level up is more important the higher you go
 
         visit_score = 3 if self.current_position not in self.visited_nodes else 0
         if len(self.visited_nodes) == 10 : self.visited_nodes.clear()
@@ -627,6 +728,21 @@ class AI(Player):
             return 
 
     def player_fight_turn(self,monster:Monster):
+        
+        ## Speciality Checks - Bear Speciality should be checked at the start of player turn.
+
+        if self.school == "Bear" and self.shield == 0 and self.SpecialityUsed == False:
+            
+            #Progresiion for each speciality Level
+            bear_progression = [ [0,0], [0,1], [1,1], [1,2], [2,2], [2,2] ]
+            ## Bear Draws cards depending on his speciality level
+            #self.draw(bear_progression[self.Speciality][1])
+            self.draw_in_combat(bear_progression[self.Speciality][1])
+            self.UpShield(bear_progression[self.Speciality][0])
+
+
+            self.SpecialityUsed = True
+
 
         #print("Player Turn")
         combos = self.get_combos()
@@ -651,33 +767,34 @@ class AI(Player):
 
         else:
             monster.take_dmg(chosen_combo_values["DMG"])
+
+
+        ## Wolf Speciality
+        if self.school == "Wolf" and len(chosen_combo) > 3  and self.SpecialityUsed == False:
+            #Progresiion for each speciality Level
+            wolf_progression = [ [0,0], [1,0], [1,1], [1,2], [2,2], [2,2] ]
+            ## Wolf deals damage based on Speciality.
+            self.draw_in_combat(wolf_progression[self.Speciality][1])
+            monster.take_dmg(wolf_progression[self.Speciality][0])
+
+            self.SpecialityUsed = True
             
         # monster.take_dmg(chosen_combo_values["DMG"])
 
         self.move_to_discard(chosen_combo)
         self.UpShield(chosen_combo_values["SHIELD"])
-        self.draw(chosen_combo_values["DRAW"] + self.Combat)
-
-    def monster_fight_turn(self,monster:Monster):
-        #print("Monster Turn")
-
-        card = monster.play_top_card()
-        self.take_dmg(card["DMG"])
-
-    def check_fight_status(self,monster:Monster):
-        #print(f"Current Player HP: {len(self.deck) + len(self.hand)}")
-        #print(f"Current Monster HP: {len(monster.fight_deck)}")
-
-        if not monster.is_alive():
-            #print("Monster Lost")
-            return 1
-        if not self.is_alive():
-            #print("Player Lost")
-            return 2
-        return 0
+        self.draw_in_combat(chosen_combo_values["DRAW"] + self.Combat)
 
     
-    def  initiate_fight_monster(self, monster:Monster):
+
+    
+    def initiate_fight_monster(self, monster:Monster, debug = False):
+
+        # Reset Speciality (One speciality can be used per combat)
+        self.SpecialityUsed = False
+        ## Make Sure player is alive in combat
+        self.alive = True
+        monster.alive = True
 
         # Lifepool gets created, all cards get shuffled into the deck, hand stays as it is
         for card in self.discard:
@@ -685,6 +802,7 @@ class AI(Player):
             self.deck.append(c)
 
         random.shuffle(self.deck)
+        monster.initiate_fight()
         # Cards in deck are treated as HP.
 
         # RN not implementing the trail, player goes first
@@ -692,14 +810,18 @@ class AI(Player):
         # RN we going to do this based if the player is an AI, he is going to play the maximum combo from his hand
         
         while self.alive and monster.alive:
-            fight_status = 0
 
-            self.player_fight_turn(monster)
-            fight_status = self.check_fight_status(monster)
+            fight_status = 0
+            fight_status = self.check_fight_status(monster,debug)
+
+            self.monster_fight_turn(monster)
+            fight_status = self.check_fight_status(monster,debug)
+            
             if fight_status != 0:
                 return fight_status
 
-            self.monster_fight_turn(monster)
-            fight_status = self.check_fight_status(monster)
+            self.player_fight_turn(monster)
+            fight_status = self.check_fight_status(monster,debug)
+
             if fight_status != 0:
                 return fight_status

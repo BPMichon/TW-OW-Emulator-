@@ -10,11 +10,24 @@ import json
 import csv
 import matplotlib.pyplot as plt
 
+
+def run_single_game_human(_=None):  # The argument is required for map()
+    market = board.MARKET()
+    Human_player = player_p.Player(name='BEAR', current_position=12, school="BEAR")
+    board_g = board.Board(graph=locations.GAME_MAP, players=[Human_player], market=market)
+    result = board_g.start_game(40, debug=True, game_stats=True)
+
+    return {
+        'MonstersKilled': result['MonstersKilled'],
+        'TurnTaken': result['TurnTaken'],
+        'GameWon': result['GameWon']
+    }
+
 def run_single_game(_=None):  # The argument is required for map()
     market = board.MARKET()
     AI_player = player_p.AI(name='AI_BEAR', current_position=12, school="BEAR")
     board_g = board.Board(graph=locations.GAME_MAP, players=[AI_player], market=market)
-    result = board_g.start_game(20, game_stats=True)
+    result = board_g.start_game(40, debug=True, game_stats=True)
 
     return {
         'MonstersKilled': result['MonstersKilled'],
