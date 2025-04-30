@@ -28,55 +28,109 @@ class Card:
 
     # def __repr__(self):
     #     return f"{self.colour} -> {', '.join(map(str, self.combos.keys()))}"
+    # def __repr__(self):
+    #     colour_code = ""
+    #     reset_code = "\033[0m"
+    #     colour_circle = ""
+
+    #     if self.colour.lower() == "red":
+    #         colour_code = "\033[91m"  # Bright Red
+    #         colour_circle = "🔴"
+    #     elif self.colour.lower() == "blue":
+    #         colour_code = "\033[94m"  # Bright Blue
+    #         colour_circle = "🔵"
+    #     elif self.colour.lower() == "yellow":
+    #         colour_code = "\033[93m"  # Bright Yellow
+    #         colour_circle = "🟡"
+    #     elif self.colour.lower() == "purple":
+    #         colour_code = "\033[95m"  # Bright Magenta (often used for purple)
+    #         colour_circle = "🟣"
+    #     elif self.colour.lower() == "green":
+    #         colour_code = "\033[92m"  # Bright Green
+    #         colour_circle = "🟢"
+
+    #     combo_str_parts = []
+    #     for key in self.combos.keys():
+    #         combo_colour_code = ""
+    #         combo_shape = ""
+    #         if key.lower() == "red":
+    #             combo_colour_code = "\033[91m"
+    #             combo_shape = "🟥"
+    #         elif key.lower() == "blue":
+    #             combo_colour_code = "\033[94m"
+    #             combo_shape = "🟦"
+    #         elif key.lower() == "yellow":
+    #             combo_colour_code = "\033[93m"
+    #             combo_shape = "🟨"
+    #         elif key.lower() == "purple":
+    #             combo_colour_code = "\033[95m"
+    #             combo_shape = "🟪"
+    #         elif key.lower() == "green":
+    #             combo_colour_code = "\033[92m"
+    #             combo_shape = "🟩"
+    #         combo_str_parts.append(f"{combo_colour_code}{combo_shape}{reset_code}")
+
+    #     combo_str = ", ".join(combo_str_parts)
+
+    #     return f"{colour_code}{colour_circle}{reset_code} -> {combo_str}"
+
     def __repr__(self):
-        colour_code = ""
         reset_code = "\033[0m"
-        colour_circle = ""
 
-        if self.colour.lower() == "red":
-            colour_code = "\033[91m"  # Bright Red
-            colour_circle = "🔴"
-        elif self.colour.lower() == "blue":
-            colour_code = "\033[94m"  # Bright Blue
-            colour_circle = "🔵"
-        elif self.colour.lower() == "yellow":
-            colour_code = "\033[93m"  # Bright Yellow
-            colour_circle = "🟡"
-        elif self.colour.lower() == "purple":
-            colour_code = "\033[95m"  # Bright Magenta (often used for purple)
-            colour_circle = "🟣"
-        elif self.colour.lower() == "green":
-            colour_code = "\033[92m"  # Bright Green
-            colour_circle = "🟢"
+        # Colour settings
+        colour_mappings = {
+            "red":    ("\033[91m", "🔴", "🟥"),
+            "blue":   ("\033[94m", "🔵", "🟦"),
+            "yellow": ("\033[93m", "🟡", "🟨"),
+            "purple": ("\033[95m", "🟣", "🟪"),
+            "green":  ("\033[92m", "🟢", "🟩"),
+        }
 
-        combo_str_parts = []
-        for key in self.combos.keys():
-            combo_colour_code = ""
-            combo_shape = ""
-            if key.lower() == "red":
-                combo_colour_code = "\033[91m"
-                combo_shape = "🟥"
-            elif key.lower() == "blue":
-                combo_colour_code = "\033[94m"
-                combo_shape = "🟦"
-            elif key.lower() == "yellow":
-                combo_colour_code = "\033[93m"
-                combo_shape = "🟨"
-            elif key.lower() == "purple":
-                combo_colour_code = "\033[95m"
-                combo_shape = "🟪"
-            elif key.lower() == "green":
-                combo_colour_code = "\033[92m"
-                combo_shape = "🟩"
-            combo_str_parts.append(f"{combo_colour_code}{combo_shape}{reset_code}")
+        # Ability icons
+        ability_symbols = {
+            "DMG": "⚔",
+            "SHIELD": "🛡",
+            "DRAW": "🂡"
+        }
 
-        combo_str = ", ".join(combo_str_parts)
+        def format_ability(ability_dict):
+            parts = []
+            for ability_type, value in ability_dict.items():
+                symbol = ability_symbols.get(ability_type.upper())
+                if symbol:
+                    parts.append(f"{value}{symbol}")
+            return " + ".join(parts)
 
-        return f"{colour_code}{colour_circle}{reset_code} -> {combo_str}"
+        # Main card info
+        lower_colour = self.colour.lower()
+        colour_code, colour_circle, colour_square = colour_mappings.get(lower_colour, ("", "?", "?"))
+
+        # Format base ability
+        own_ability_text = format_ability(self.ability)
+        main_display = f"{own_ability_text} {colour_square}" if own_ability_text else f"{colour_square}"
+
+        result = f"[ {colour_code}{main_display}{reset_code}"
+
+        # Format combos inline
+        for combo_colour, combo_ability in self.combos.items():
+            combo_colour_lower = combo_colour.lower()
+            combo_code, _, combo_square = colour_mappings.get(combo_colour_lower, ("", "?", "?"))
+            combo_ability_text = format_ability(combo_ability)
+
+            if combo_ability_text:
+                combo_display = f"{combo_ability_text} {combo_square}"
+            else:
+                combo_display = f"{combo_square}"
+
+            result += f" -> {combo_code}{combo_display}{reset_code}"
+
+        result += " ]"  # Close the bracket and add a line break
+        return result
     
     #Returns list of colours that it combos with 
     def combo_colours():
         pass
+    
     def state(self):
         # Create card details as key-value pairs
         details = [

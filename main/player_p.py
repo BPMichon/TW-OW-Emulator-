@@ -12,9 +12,9 @@ from collections import defaultdict
 ############################    MONSTER CODE   #########################################
 
 class Monster:
-    def __init__(self,name,health, difficulty):
+    def __init__(self,name, difficulty):
         self.name = name
-        self.health = health
+        #self.health = health
         self.hp_deck = []
         self.fight_deck = []
         self.alive = True
@@ -22,7 +22,7 @@ class Monster:
 
         self.easy_hp =   [4,4, 3,3, 4,4, 5,5, 6,6,  5,5] #12
         self.medium_hp = [4,4, 3,3, 4,4, 5,5, 6,6,  5,5, 5,5, 3,3] #16
-        self.hard_hp =   [4,4, 3,3, 4,4, 5,5, 6,6,  5,5, 5,5, 3,3, 6,6, 4,4] #20
+        self.hard_hp =   [4,4, 3,3, 4,4, 5,5, 6,6,  5,5, 5,5, 3,3,  6,6, 4,4] #20
     
     def initiate_fight(self):
         self.fight_deck = []
@@ -84,7 +84,19 @@ class Player:
         self.Alchemy = 1
         self.Speciality = 1
 
+        self.CombatVP = False
+        self.DefenseVP = False
+        self.AlchemyVP = False
+        self.SpecialityVP = False
+
+        self.monster_wins = 0
+        self.monster_attempts = 0
+
+        self.won = False
+
+
         self.SpecialityUsed = False
+        self.SpecialityNumber = 0
 
         self.alive = True
 
@@ -103,12 +115,21 @@ class Player:
             pass
         
 
+        # random.shuffle(self.deck)  # Shuffle deck
+
+        # ## On Game Start, player draws 3 cards.
+        # for i in range(3):
+        #     card = self.deck.pop()
+        #     self.hand.append(card)
+
+    def prepare_decks(self):
         random.shuffle(self.deck)  # Shuffle deck
 
         ## On Game Start, player draws 3 cards.
         for i in range(3):
             card = self.deck.pop()
             self.hand.append(card)
+
 
     def monster_fight_turn(self,monster:Monster):
         #print("Monster Turn")
@@ -120,6 +141,7 @@ class Player:
         if debug: 
             print(" ")
             print(f"Current Player HP: {len(self.deck) + len(self.hand)}")
+            print(f"Currnet Discard: {len(self.discard)}")
             print(f"Current Monster HP: {len(monster.fight_deck)}")
 
         if not monster.is_alive():
@@ -165,24 +187,43 @@ class Player:
             print(f"{i}: {card}")
 
         # Ask for input
-        user_input = input("Enter the indices of the cards you want to play, separated by commas (e.g. 0,2,3): ")
+        #user_input = input("Enter the indices of the cards you want to play, separated by commas (e.g. 0,2,3): ")
 
-        try:
-            # Parse the indices
-            indices = [int(i.strip()) for i in user_input.split(",")]
+        while True:
 
-            # Construct the card combo from the hand using the indices
-            selected_cards = [self.hand[i] for i in indices]
+            try:
+                # Prompt the user for input
+                user_input = input("Enter the indices of the cards you want to play, separated by commas (e.g. 0,2,3) or nothing to skip: ")
+                
+                if user_input == "":
+                    print("You played no cards")
+                    selected_cards = None
+                    break
+                # Parse the indices
+                indices = [int(i.strip()) for i in user_input.split(",")]
 
-            # Check if the selected combo is valid
-            if self.valid_combo(selected_cards):
-                print("You played a valid combo:", selected_cards)
-                # Remove cards from hand or process as needed
-            else:
-                print("Invalid combination of cards. Please try again.")
+                
 
-        except (ValueError, IndexError):
-            print("Invalid input. Make sure you enter valid card indices separated by commas.")
+                # Construct the card combo from the hand using the indices
+                selected_cards = [self.hand[i] for i in indices]
+
+                # Check if the selected combo is valid
+                # if not user_input:
+                #     print("You played no cards")
+                #     selected_cards = None
+                #     break
+
+                if self.valid_combo(selected_cards):
+                    print("You played a valid combo:", selected_cards)
+                    # Remove cards from hand or process as needed
+                    break  # Exit the loop since the combo is valid
+                else:
+                    print("Invalid combination of cards. Please try again.")
+
+            except ValueError:
+                print("Invalid input format. Please enter a comma-separated list of numbers.")
+            except IndexError:
+                print("One or more indices are out of range. Please try again.")
        
         
         chosen_combo_values = self.evaluate_combo_2(selected_cards)
@@ -213,7 +254,7 @@ class Player:
             
         # monster.take_dmg(chosen_combo_values["DMG"])
 
-        self.move_to_discard(selected_cards)
+        if selected_cards : self.move_to_discard(selected_cards)
         self.UpShield(chosen_combo_values["SHIELD"])
         self.draw_in_combat(chosen_combo_values["DRAW"] + self.Combat)
 
@@ -226,11 +267,12 @@ class Player:
         monster.alive = True
 
         # Lifepool gets created, all cards get shuffled into the deck, hand stays as it is
-        for card in self.discard:
+        for card in reversed(self.discard):
             c = self.discard.pop()
             self.deck.append(c)
 
         random.shuffle(self.deck)
+
         monster.initiate_fight()
         # Cards in deck are treated as HP.
 
@@ -547,7 +589,7 @@ class Player:
         return {"DMG": damage, "DRAW": draw, "SHIELD": shield, "LENGTH": combo_length}
 
 
-
+    # Old Evaluation Function
     # def evaluate_combo(cards: list):
     #     if not cards:
     #         return {"DMG": 0, "DRAW": 0, "SHIELD": 0, "LENGTH": 0}
@@ -613,7 +655,7 @@ class Player:
         
 
 
-   # Heuristic function (AI chases the player, currently only works for 1 player)
+# Heuristic function (AI chases the player, currently only works for 1 player)
 def heuristic(position, board):
     player_pos = board.players[0].current_position
     return -nx.shortest_path_length(board.graph, source=position, target=player_pos)  #Minimize distance
@@ -680,28 +722,101 @@ class AI(Player):
     ## This Heuristic Evaluated the current Player State, this will make it
     ##  so it is easier for us to evaluate how the player moves around the board
 
-    def PlayerStateHeuristic(self,board):
-        ## Different pouints should be weighted differently (GOLD IS IMPORTANT)
+    # ## Finall Heuristic
+    # def PlayerStateHeuristic(self, board):
+    #     # Data-Colected Heuristics
+    #     gold = 0.8 * self.gold
+    #     hand = 1.2 * self.hand_strength(self.hand)
+    #     victory_points = 3.0 * self.victory_points
 
-        gold        = 1.2 * self.gold 
-        hand        = 0.8 * self.hand_strength(self.hand)
-        potions     = 0.5 * self.alchemyCards
-        shield      = 0.5 * self.shield
+    #     # Player - Stats
+    #     stats = (
+    #         (self.Alchemy    * 0.8) +
+    #         (self.Combat     * 1.5) +
+    #         (self.Defense    * 1.1) +
+    #         (self.Speciality * 1.5)
+    #     )
 
+    #     # Monster Oriented Heuristic
+    #     has_monster = board.graph.nodes[self.current_position]["monster"]
+    #     monster = (2.0 * stats) if has_monster else 0.0
+
+    #     # Reward for exploration of new nodes
+    #     visit_score = 2.0 if self.current_position not in self.visited_nodes else 0.0
+            
+    #     # We clear visits if enough nodes were visited
+    #     if len(self.visited_nodes) == 10:
+    #         self.visited_nodes.clear()
+
+    #     # Final Heuristic Score
+    #     FinalScore = (
+    #         gold +
+    #         hand +
+    #         monster +
+    #         visit_score +
+    #         victory_points
+    #     )
+
+    #     return FinalScore
+
+
+    def PlayerStateHeuristic(self, board):
+
+        # Data-Colected Heuristics
+        gold = 0.9 * self.gold
+        hand = 1 * self.hand_strength(self.hand)
+        victory_points = 3.0 * self.victory_points
+
+        # Player Stats
+        stats = ((self.Alchemy    * 0.8) + (self.Combat     * 1.5) +
+                 (self.Defense    * 1.1) + (self.Speciality * 1.5) )
+
+        # Monster Oriented Heuristic
         has_monster = board.graph.nodes[self.current_position]["monster"]
-        monster    = 2 if has_monster else 0
+        monster = (8) if has_monster else 0.0
 
-        stats = (self.Alchemy * 0.1) + (self.Combat * 1) + (self.Defense * 1) + (self.Speciality * 0.2)
-        level = self.level * 3 #Level up is more important the higher you go
+        Score = gold + hand + victory_points + monster + stats
+        return Score
 
-        visit_score = 3 if self.current_position not in self.visited_nodes else 0
-        if len(self.visited_nodes) == 10 : self.visited_nodes.clear()
+    # def PlayerStateHeuristic(self, board):
+    #     # Data-Colected Heuristics
+    #     gold = 0.9 * self.gold
+    #     hand = 1 * self.hand_strength(self.hand)
+    #     victory_points = 3.0 * self.victory_points
+
+    #     stats = (
+    #         (self.Alchemy    * 0.8) + (self.Combat     * 1.5) +
+    #         (self.Defense    * 1.1) + (self.Speciality * 1.5))
+
+    #     # Monster Oriented Heuristic
+    #     has_monster = board.graph.nodes[self.current_position]["monster"]
+    #     monster = (3 * stats) if has_monster else 0.0
+       
+    #     Score = gold + hand + victory_points + monster
+    #     return Score
+
+
+    # def PlayerStateHeuristic(self,board):
+    #     ## Different pouints should be weighted differently (GOLD IS IMPORTANT)
+
+    #     gold        = 1.2 * self.gold 
+    #     hand        = 1 * self.hand_strength(self.hand)
+    #     #potions     = 0.5 * self.alchemyCards
+    #     #shield      = 0.5 * self.shield
+
+    #     has_monster = board.graph.nodes[self.current_position]["monster"]
+    #     monster    = 2 if has_monster else 0
+
+    #     #stats = (self.Alchemy * 0.1) + (self.Combat * 1) + (self.Defense * 1) + (self.Speciality * 0.2)
+    #     #level = self.level * 3 #Level up is more important the higher you go
+
+    #     visit_score = 3 if self.current_position not in self.visited_nodes else 0
+    #     if len(self.visited_nodes) == 10 : self.visited_nodes.clear()
 
         
 
-        FinalScore = gold + hand + monster + stats + level + visit_score + potions + shield
-        return FinalScore
-
+    #     FinalScore = gold + hand + monster + visit_score #+ stats #+ level #+ stats + level + visit_score + potions + shield
+    #     return FinalScore
 
 
     ## This Will be
@@ -731,7 +846,7 @@ class AI(Player):
         
         ## Speciality Checks - Bear Speciality should be checked at the start of player turn.
 
-        if self.school == "Bear" and self.shield == 0 and self.SpecialityUsed == False:
+        if self.school == "BEAR" and self.shield == 0 and self.SpecialityUsed == False:
             
             #Progresiion for each speciality Level
             bear_progression = [ [0,0], [0,1], [1,1], [1,2], [2,2], [2,2] ]
@@ -742,6 +857,7 @@ class AI(Player):
 
 
             self.SpecialityUsed = True
+            self.SpecialityNumber += 1
 
 
         #print("Player Turn")
@@ -770,7 +886,7 @@ class AI(Player):
 
 
         ## Wolf Speciality
-        if self.school == "Wolf" and len(chosen_combo) > 3  and self.SpecialityUsed == False:
+        if (self.school == "WOLF") and ( len(chosen_combo) > 2 )  and  (self.SpecialityUsed == False ):
             #Progresiion for each speciality Level
             wolf_progression = [ [0,0], [1,0], [1,1], [1,2], [2,2], [2,2] ]
             ## Wolf deals damage based on Speciality.
@@ -778,6 +894,7 @@ class AI(Player):
             monster.take_dmg(wolf_progression[self.Speciality][0])
 
             self.SpecialityUsed = True
+            self.SpecialityNumber += 1
             
         # monster.take_dmg(chosen_combo_values["DMG"])
 
@@ -785,9 +902,6 @@ class AI(Player):
         self.UpShield(chosen_combo_values["SHIELD"])
         self.draw_in_combat(chosen_combo_values["DRAW"] + self.Combat)
 
-    
-
-    
     def initiate_fight_monster(self, monster:Monster, debug = False):
 
         # Reset Speciality (One speciality can be used per combat)

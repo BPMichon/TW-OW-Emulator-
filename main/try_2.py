@@ -29,7 +29,7 @@ P1 = player_p.Player(name='P1',current_position=1,school="WOLF")
 
 market = board.MARKET()
 AI_player = player_p.AI(name='AI_BEAR', current_position=12,school="BEAR")
-board_g = board.Board(graph=locations.GAME_MAP, players=[AI_player],market=market)
+#board_g = board.Board(graph=locations.GAME_MAP, players=[AI_player],market=market)
 
 
 AI_player_2 = player_p.AI(name='AI_WOLF', current_position=1,school="WOLF")

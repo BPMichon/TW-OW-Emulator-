@@ -1,6 +1,5 @@
 import collections
 import statistics
-import concurrent.futures
 import board
 import player_p
 import locations
@@ -24,7 +23,8 @@ def save_stats_to_csv(result, sample_size, turn_limit, player_csv_path="player_s
                 "AverageVictoryPoints", "VictoryPointsVariance",
                 "AverageMonsterKills", "AverageMonsterAttempts",
                 "KillSuccessRate(%)", "WinPercentage(%)",
-                "AverageCombat", "AverageAlchemy", "AverageDefence", "AverageSpeciality","AverageSpecialityCount","AverageTurns","VarianceTurns"
+                "AverageCombat", "AverageAlchemy", "AverageDefence", "AverageSpeciality",
+                "AverageSpecialityCount", "AverageTurns", "VarianceTurns"
             ])
 
     # Write player stats
@@ -33,12 +33,12 @@ def save_stats_to_csv(result, sample_size, turn_limit, player_csv_path="player_s
         for player in player_stats:
             writer.writerow([
                 sample_size, turn_limit, player["Player"],
-                f"{player.get('AverageVictoryPoints',0):.2f}", f"{player.get('VictoryPointsVariance',0):.2f}",
-                f"{player.get('AverageMonsterKills',0):.2f}", f"{player.get('AverageMonsterAttempts',0):.2f}",
-                f"{player.get('KillSuccessRate',0):.2f}", f"{player.get('WinPercentage',0):.2f}",
-                f"{player.get('AverageCombat',0):.2f}", f"{player.get('AverageAlchemy',0):.2f}",
-                f"{player.get('AverageDefence',0):.2f}", f"{player.get('AverageSpeciality',0):.2f}",
-                f"{player.get('AverageSpecialityCount',0):.2f}",
+                f"{player.get('AverageVictoryPoints', 0):.2f}", f"{player.get('VictoryPointsVariance', 0):.2f}",
+                f"{player.get('AverageMonsterKills', 0):.2f}", f"{player.get('AverageMonsterAttempts', 0):.2f}",
+                f"{player.get('KillSuccessRate', 0):.2f}", f"{player.get('WinPercentage', 0):.2f}",
+                f"{player.get('AverageCombat', 0):.2f}", f"{player.get('AverageAlchemy', 0):.2f}",
+                f"{player.get('AverageDefence', 0):.2f}", f"{player.get('AverageSpeciality', 0):.2f}",
+                f"{player.get('AverageSpecialityCount', 0):.2f}",
                 f"{turn_average:.2f}", f"{turn_variance:.2f}"
             ])
 
@@ -50,16 +50,16 @@ def initialize_base_game(player_class=player_p.AI, player_name='AI_BEAR', positi
     player = player_class(name=player_name, current_position=position, school=school)
     player2 = player_class(name="AI_WOLF", current_position=1, school="WOLF")
 
-    human_wolf = player_p.Player(name='P1',current_position=1,school="WOLF")
-    human_bear = player_p.Player(name='P1',current_position=1,school="BEAR")
+    human_wolf = player_p.Player(name='P1', current_position=1, school="WOLF")
+    human_bear = player_p.Player(name='P1', current_position=12, school="BEAR")
 
-    board_g = board.Board(graph=game_map.graph, players=[player2,player], market=market)
+    board_g = board.Board(graph=game_map.graph, players=[human_bear,player2], market=market)
 
     return board_g
 
 def run_single_game_from_base(base_board, turn):
     board_g = copy.deepcopy(base_board)
-    result = board_g.start_game(turn, debug=False, game_stats=True)
+    result = board_g.start_game(turn, debug=True, game_stats=True)
     return {
         "Stats": result
     }
@@ -82,27 +82,25 @@ def sample_games(num_samples=1000, turns=20):
 
     base_board = initialize_base_game()
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
-        futures = [executor.submit(run_single_game_from_base, copy.deepcopy(base_board), turn=turns) for _ in range(num_samples)]
+    for i in range(num_samples):
+        result = run_single_game_from_base(base_board, turn=turns)
 
-        for i, future in enumerate(concurrent.futures.as_completed(futures), 1):
-            result = future.result()
+        for idx, player_stat in enumerate(result.get('Stats', [])):
+            player_victory_points[idx].append(player_stat['Victorypoints'])
+            player_monster_kills[idx].append(player_stat['MonsterKills'])
+            player_monster_attempts[idx].append(player_stat['MonsterAttempts'])
+            player_combat[idx].append(player_stat.get('Combat', 0))
+            player_alchemy[idx].append(player_stat.get('Alchemy', 0))
+            player_defence[idx].append(player_stat.get('Defence', 0))
+            player_speciality[idx].append(player_stat.get('Speciality', 0))
+            player_speciality_count[idx].append(player_stat.get('SpecialityCount', 0))
 
-            for idx, player_stat in enumerate(result.get('Stats', [])):
-                player_victory_points[idx].append(player_stat['Victorypoints'])
-                player_monster_kills[idx].append(player_stat['MonsterKills'])
-                player_monster_attempts[idx].append(player_stat['MonsterAttempts'])
-                player_combat[idx].append(player_stat.get('Combat', 0))
-                player_alchemy[idx].append(player_stat.get('Alchemy', 0))
-                player_defence[idx].append(player_stat.get('Defence', 0))
-                player_speciality[idx].append(player_stat.get('Speciality', 0))
-                player_speciality_count[idx].append(player_stat.get('SpecialityCount',0))
-                if player_stat['GameWon']:
-                    player_wins[idx] += 1
+            if player_stat['GameWon']:
+                player_wins[idx] += 1
 
-                turn_lengths.append(player_stat['Turn'])
+            turn_lengths.append(player_stat['Turn'])
 
-            print(f"\rGame {i}/{num_samples} complete", end="", flush=True)
+        print(f"\rGame {i+1}/{num_samples} complete", end="", flush=True)
 
     print()
 
@@ -125,7 +123,7 @@ def sample_games(num_samples=1000, turns=20):
             "AverageAlchemy": statistics.mean(player_alchemy[idx]) if player_alchemy[idx] else 0,
             "AverageDefence": statistics.mean(player_defence[idx]) if player_defence[idx] else 0,
             "AverageSpeciality": statistics.mean(player_speciality[idx]) if player_speciality[idx] else 0,
-            "AverageSpecialityCount":statistics.mean(player_speciality_count[idx]) if player_speciality_count[idx] else 0,
+            "AverageSpecialityCount": statistics.mean(player_speciality_count[idx]) if player_speciality_count[idx] else 0,
         }
         player_stats.append(player_data)
 
@@ -140,7 +138,7 @@ def sample_games(num_samples=1000, turns=20):
     }
 
 if __name__ == "__main__":
-    sample_sizes = [1000]
+    sample_sizes = [3]
     turns = [50]
     results = {}
 
@@ -155,7 +153,6 @@ if __name__ == "__main__":
             save_stats_to_csv(result, sample_size=size, turn_limit=turn_limit)
 
     # --- Plotting the Victory Points Distribution ---
-
     for size in sample_sizes:
         for turn_limit in turns:
             result = results[size][turn_limit]
@@ -192,4 +189,3 @@ if __name__ == "__main__":
             plt.tight_layout()
             plt.savefig(f"victory_points_distribution_{size}_games_{turn_limit}_turns.png")
             plt.show()
-        
