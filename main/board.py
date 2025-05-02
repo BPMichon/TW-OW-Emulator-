@@ -1,6 +1,4 @@
-import networkx as nx
 import random 
-#from numpy import random
 from tabulate import tabulate
 import player_p 
 from card import load_cards, Card
@@ -19,10 +17,9 @@ class Board:
         self.market : MARKET = market
        
         self.monster_kills = 0
-        #self.stats = {"GameWon" : 0, "MonstersKilled" : 0, "TurnTaken" : 0}
         self.stats = []
 
-    ## Generates a Monster at a Specific Difficulty
+    ## Generates a Monster at a Specified Difficulty
     def make_monster(self,difficulty):
         monster = player_p.Monster(f"{difficulty} Monster",difficulty=difficulty)
         return monster
@@ -95,28 +92,29 @@ class Board:
         ability = self.graph.nodes[location_id]["ability"]
 
         if ability == "COMBAT":
-            ## Check Requirements
+           
             if player.Combat <= player.level:
                 player.UpStat("COMBAT")
-                ## Raise UpStat(combat)
+                
 
         elif ability == "DEFENSE":
             if player.Defense <= player.level:
                 player.UpStat("DEFENSE")
-                ## Raise UpStat(defense)
+                
 
         elif ability == "ALCHEMY":
             if player.Alchemy <= player.level:
                 player.UpStat("ALCHEMY")
-                ## Raise UpStat(alchemy)
+                
 
         elif ability == "SPECIALITY":
             if player.Speciality <= player.level:
                 player.UpStat("SPECIALITY")
-                ## Raise UpStat(speciality)
+                
 
         elif ability == "TRAIL":
             player.gold += 1
+            ## NOT FULLY IMPLEMENTED
             # You gain a Quest with a random location, of a specific terrain, when you visit that location
             # You gain 1 gold and get to flip a trail token (advantage for monster fight)
             pass
@@ -127,7 +125,7 @@ class Board:
                 player.alchemyCards += 1
 
         elif ability == "SCHOOL":
-            # Here you may pay gold to upgrade your ability, cost depends on the current level of the ability
+            ## Here you may pay gold to upgrade your ability, cost depends on the current level of the ability
             choices = []
             school = self.graph.nodes[location_id]["school"]
             
@@ -231,7 +229,7 @@ class Board:
         elif rng == 9:
             player.Alchemy -= 1
 
-    # We take the current player state, for each possible outrcome in the explore actions we then 
+    ## We take the current player state, for each possible outrcome in the explore actions we then 
     def explore_evaluation(self, player):
 
         score = 0
@@ -245,13 +243,14 @@ class Board:
             self.explore(player_copy,RNG=False,choice=i)
             
             state_score = player_copy.PlayerStateHeuristic(self)
+            ## 9 not 10
             score += ( state_score/9 )
 
         #print(f"Exploration: {score}")
         return score
     
 
-    # We use this to evaluate if player combat is possible at this section
+    ## We use this to evaluate if player combat is possible at this section
     def combat_evaluation(self, player, difficulty):
 
         ### Need to calculate the win ratio simulation for the player 
@@ -322,20 +321,14 @@ class Board:
         AI_MOVES = player.get_valid_moves_all(board=self)
         if AI_MOVES:
             for move in AI_MOVES:
-                # Copy the current Player State
+                
                 player_copy : player_p.AI = copy.deepcopy(player)
-
-                # Apply the move and execute the action
                 self.move(player_copy, move)
                 self.location_action(player_copy.current_position, player_copy)
 
-                # Evaluate the resulting board state (heuristic evaluation)
+                ## Evaluate the resulting board state (heuristic evaluation)
                 score = player_copy.PlayerStateHeuristic(board=self)
-                
-                # Recurse into the next level
                 next_score, _ = self.simulate_move(player_copy, depth, current_depth + 1)
-                
-                # Combine the current move's score with the result from deeper levels
                 total_score = score + next_score
 
                 # If this move gives a better score, update chosen_move
@@ -491,7 +484,7 @@ class Board:
                         else:
                             pass
                 
-                    ## Need to reset cards at this step, if a card is weak at a certain threshhold, it should instead be replaced
+                    ## Currently gets rid of weakest cards from hand
                     while len(player.hand) > 3:
                         player.discard_card(player.weakest_card(player.hand))
 
@@ -508,8 +501,7 @@ class Board:
 
                     ## Buying Phase
                     self.market.buy_random(player)
-                    #player.print_hand()
-
+                
                     ## Current Win Condition
                     if player.victory_points == 5:
                         player.won = True
@@ -539,7 +531,7 @@ class Board:
                             return self.stats
                         else:
                             return(1)
-
+                ##Human Player
                 elif isinstance(player, player_p.Player):
                     print(f"{player.name}'s turn! Choose a move:")
 
@@ -768,9 +760,9 @@ class Board:
 
 # I need to initialise the card market, shuffle it and deal 6 cards, into the bank array
 # When a card gets bought from the bank it moves up one space in the position
-# There is discounts to the cards to the right of the bank
+# There is discounts to the cards to the right of the bank (NOT IMPLEMENTED)
 
-##Id rather Shuffle the deck, and persistently move the numbers around the game,
+## Id rather Shuffle the deck, and persistently move the numbers around the game,
 ## This way its easier to keep track and limmit duplicates of cards
 
 
@@ -796,31 +788,30 @@ class MARKET:
         print("")
 
     def buy_random(self, player: player_p.Player):
-        # Filter the bank to only include cards the player can afford
         affordable_cards = [card for card in self.bank if len(player.hand) >= card.cost]
 
-        if not affordable_cards:  # If no affordable cards, exit the function
-            return  # Or raise an exception if needed
+        if not affordable_cards:  
+            return  
 
-        # Pick a random affordable card
+        ## Pick a random affordable card
         random_card: Card = random.choice(affordable_cards)
 
-        # Discard the required number of cards
+        ## Discard the required number of cards
         for _ in range(random_card.cost):
             player.discard_random()
 
-        # Add the purchased card to the player's deck
+        ## Add the purchased card to the player's deck
         #print(f"Before Random Card Aquired {len(player.hand)}")
         player.add_card(random_card)
         #print(f"Random Card Aquired {len(player.hand)}")
 
-        # Remove the bought card from the bank and shift remaining cards left
+        ## Remove the bought card from the bank and shift remaining cards left
         bought_index = self.bank.index(random_card)
         for i in range(bought_index, len(self.bank) - 1):
             self.bank[i] = self.bank[i + 1]
 
-        # Refill the bank from the deck if possible
+        ## Refill the bank from the deck if possible
         if self.deck:
             self.bank[-1] = self.deck.pop()
         else:
-            self.bank.pop()  # Remove last card if the deck is empty
+            self.bank.pop()  

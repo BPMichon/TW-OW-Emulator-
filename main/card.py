@@ -1,12 +1,5 @@
 import networkx as nx
-import random
 import json
-import copy
-from numpy import random
-import itertools
-from itertools import combinations
-from tabulate import tabulate
-
 
 ########################################################################################
 ############################# CARD CODE ################################################
@@ -177,10 +170,6 @@ def load_cards(path):
             card_array.append(card)
 
     return card_array   
-
-
-
-
 
 
 #######################################################################################

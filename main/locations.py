@@ -1,4 +1,3 @@
-# game_map.py
 import json
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -13,7 +12,6 @@ class GameMap:
         self._build_graph(locations)
 
     def load_from_data(self, locations):
-        """Alternative to load from file - useful for testing"""
         self._build_graph(locations)
 
     def start(self):

@@ -1,49 +1,27 @@
-import networkx as nx
-import random
-import json
-import copy
-from numpy import random
-import itertools
-from itertools import combinations
-from tabulate import tabulate
-
+import locations
 import player_p
 import board
-#from player import Player, AI ,Monster
-#from board import MARKET,Board,map_graph
 
-
-########################################################################################
-################################# MAIN CODE ############################################
-########################################################################################
-
-market = board.MARKET()
-# print(market.deck[0].state())
-
+## Showcasing how to setup a game and how to run it
 
 # Initialize Players and Board
-P1 = player_p.Player(name='P1',current_position= 1,school="WOLF")
-AI_player = player_p.AI(name='AI', current_position=12,school="BEAR")
-AI_player_2 = player_p.AI(name='AI', current_position=1,school="WOLF")
+## Player class is for a human player
+## AI class is for a human player
+##
+## For school there are two options "WOLF" and "BEAR" these determine player decks.
+## current_position is the starting position for each school, 1 for WOLF and 12 for BEAR. 
+P1 = player_p.Player(name='P1',current_position=1,school="WOLF")
+P2 = player_p.Player(name='P2',current_position=12,school="BEAR")
 
+AI_1 = player_p.AI(name='AI_BEAR', current_position=12,school="BEAR")
+AI_2 = player_p.AI(name='AI_WOLF', current_position=1,school="WOLF")
 
-## This Code sets up the Monster to play Against
-Monster_1 = player_p.Monster("Hound", 10)
-Monster_1.initiate_fight()
+## Market Definition
+market = board.MARKET()
 
-#AI_player.initiate_fight_monster(Monster_1)
-# market.bank_print()
-# market.buy_random(P1)
-# market.bank_print()
+game_map = locations.GameMap()
+game_map.start()
 
-# P1.get_combos()
-
-board = board.Board(graph=board.map_graph, players=[AI_player_2,P1],market=market)
-board.display()
-
-# print("Valid Moves\n")
-# cards = P1.get_valid_moves()
-# for location in cards:
-#     print(location)
-
-board.start_game()
+##Game map has a graph which we pass into the board class.
+board_g = board.Board(graph=game_map.graph, players=[P1,AI_1], market=market)
+board_g.start_game(100,True,False)

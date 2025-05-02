@@ -4,7 +4,6 @@ import concurrent.futures
 import board
 import player_p
 import locations
-import json
 import csv
 import matplotlib.pyplot as plt
 import copy

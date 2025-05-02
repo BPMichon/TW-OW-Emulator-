@@ -1,11 +1,9 @@
 import networkx as nx
 import random
-import json
 import copy
 from numpy import random
 import itertools
 from itertools import combinations
-from tabulate import tabulate
 from card import load_cards , Card, ItemGraph
 from collections import defaultdict
 
@@ -62,9 +60,9 @@ class Monster:
 # Player Class stores all information About Player
 class Player:
     def __init__(self,name, school, current_position, gold=2):
-        ## Heuristic Measures
-        self.visited_nodes = {}
 
+        ## Could be used as a heuristic Measure
+        self.visited_nodes = {}
         self.school = school
         self.name = name
         self.current_position = current_position
@@ -72,8 +70,10 @@ class Player:
         self.discard = []
         self.deck = []
         self.gold = gold
+
         ## Win Condition 
         self.victory_points = 0
+
         ## Attributes Used for Leveling
         self.level = 1
         self.shield = 0
@@ -94,12 +94,10 @@ class Player:
 
         self.won = False
 
-
         self.SpecialityUsed = False
         self.SpecialityNumber = 0
 
         self.alive = True
-
         self.p3_draw_modifier = 0
 
         ## Create starter decks based on school
@@ -114,13 +112,6 @@ class Player:
         else:
             pass
         
-
-        # random.shuffle(self.deck)  # Shuffle deck
-
-        # ## On Game Start, player draws 3 cards.
-        # for i in range(3):
-        #     card = self.deck.pop()
-        #     self.hand.append(card)
 
     def prepare_decks(self):
         random.shuffle(self.deck)  # Shuffle deck
@@ -685,81 +676,11 @@ class AI(Player):
             return None
         return max(combos, key=self.evaluate_combo)
 
-    ## We are changing this
-    # def choose_move(self):
-
-    #     possible_moves = self.get_valid_moves()
-    #     if not possible_moves:
-    #         return None
-        
-    #     # Evaluate moves based on heuristic
-    #     best_move = max(possible_moves, key=lambda pos: heuristic(pos, board))
-    #     return best_move
-    def basic_heuristic(self,move,board):
-        location, cards_to_discard, gold_cost = move
-
-        # 1. Prioritize unvisited locations
-        visit_score = 1 if location not in self.visited_nodes else 0
-
-        # 2. Simulate new hand after discarding cards
-        future_hand = [card for card in self.hand if card not in cards_to_discard]
-
-        #Test Hand Strength
-        future_hand_score = self.hand_strength(future_hand)
-
-        # 4. Penalize moves that reduce hand strength too much
-        hand_penalty = -future_hand_score * 0.1  # Tune penalty weight
-
-        # 5. Penalize expensive moves
-        gold_penalty = -gold_cost * 0.1  # Tune cost weight
-
-        # 6. Prioritize Monster Location 
-        has_monster = board.graph.nodes[location]["monster"]
-        monster_bonus = 2 if has_monster else 0
-
-        return visit_score + hand_penalty + gold_penalty + monster_bonus
     
     ## This Heuristic Evaluated the current Player State, this will make it
     ##  so it is easier for us to evaluate how the player moves around the board
 
     # ## Finall Heuristic
-    # def PlayerStateHeuristic(self, board):
-    #     # Data-Colected Heuristics
-    #     gold = 0.8 * self.gold
-    #     hand = 1.2 * self.hand_strength(self.hand)
-    #     victory_points = 3.0 * self.victory_points
-
-    #     # Player - Stats
-    #     stats = (
-    #         (self.Alchemy    * 0.8) +
-    #         (self.Combat     * 1.5) +
-    #         (self.Defense    * 1.1) +
-    #         (self.Speciality * 1.5)
-    #     )
-
-    #     # Monster Oriented Heuristic
-    #     has_monster = board.graph.nodes[self.current_position]["monster"]
-    #     monster = (2.0 * stats) if has_monster else 0.0
-
-    #     # Reward for exploration of new nodes
-    #     visit_score = 2.0 if self.current_position not in self.visited_nodes else 0.0
-            
-    #     # We clear visits if enough nodes were visited
-    #     if len(self.visited_nodes) == 10:
-    #         self.visited_nodes.clear()
-
-    #     # Final Heuristic Score
-    #     FinalScore = (
-    #         gold +
-    #         hand +
-    #         monster +
-    #         visit_score +
-    #         victory_points
-    #     )
-
-    #     return FinalScore
-
-
     def PlayerStateHeuristic(self, board):
 
         # Data-Colected Heuristics
@@ -777,47 +698,6 @@ class AI(Player):
 
         Score = gold + hand + victory_points + monster + stats
         return Score
-
-    # def PlayerStateHeuristic(self, board):
-    #     # Data-Colected Heuristics
-    #     gold = 0.9 * self.gold
-    #     hand = 1 * self.hand_strength(self.hand)
-    #     victory_points = 3.0 * self.victory_points
-
-    #     stats = (
-    #         (self.Alchemy    * 0.8) + (self.Combat     * 1.5) +
-    #         (self.Defense    * 1.1) + (self.Speciality * 1.5))
-
-    #     # Monster Oriented Heuristic
-    #     has_monster = board.graph.nodes[self.current_position]["monster"]
-    #     monster = (3 * stats) if has_monster else 0.0
-       
-    #     Score = gold + hand + victory_points + monster
-    #     return Score
-
-
-    # def PlayerStateHeuristic(self,board):
-    #     ## Different pouints should be weighted differently (GOLD IS IMPORTANT)
-
-    #     gold        = 1.2 * self.gold 
-    #     hand        = 1 * self.hand_strength(self.hand)
-    #     #potions     = 0.5 * self.alchemyCards
-    #     #shield      = 0.5 * self.shield
-
-    #     has_monster = board.graph.nodes[self.current_position]["monster"]
-    #     monster    = 2 if has_monster else 0
-
-    #     #stats = (self.Alchemy * 0.1) + (self.Combat * 1) + (self.Defense * 1) + (self.Speciality * 0.2)
-    #     #level = self.level * 3 #Level up is more important the higher you go
-
-    #     visit_score = 3 if self.current_position not in self.visited_nodes else 0
-    #     if len(self.visited_nodes) == 10 : self.visited_nodes.clear()
-
-        
-
-    #     FinalScore = gold + hand + monster + visit_score #+ stats #+ level #+ stats + level + visit_score + potions + shield
-    #     return FinalScore
-
 
     ## This Will be
     def choose_move(self,board):
