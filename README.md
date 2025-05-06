@@ -46,3 +46,36 @@ Files used to simulate and gather gameplay statistics:
 
     solo_sampler.py – Simulates game for humans, could not use parallisation.
 
+## How to run the different parts of the emulator
+### The Game Itself
+To run the game itself it is needed to have a seperate file which collects the needed
+class initialisation and launches the game, an example file can be found in main/ called main.py.
+
+### Sampler
+The sampler can sample large number of games in succession, it does use concurency features to run
+in parallel. Because of this non AI players cannot occur as user input breaks parallisation.
+
+The sampler settings have to be changed within the sampler file.
+
+Line 55 - chnage which agents strat the game
+Line 67 - change the number of players
+Line 145 - change the number of samples
+Line 146 - change the turn limit
+
+The final data get calculated and stored in player_stats.csv
+
+### Sampler-Solo
+This is a copy of sampler that does not include parallisation in order to allow human players, still samples
+a number of games, games occur after eachgother in succession. 
+
+Line 55 - chnage which agents strat the game
+Line 67 - change the number of players
+Line 143 - change the number of samples
+Line 144 - change the turn limit
+
+
+The final data gets collected and written in
+player_stats.scv
+
+
+
