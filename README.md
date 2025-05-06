@@ -55,7 +55,10 @@ class initialisation and launches the game, an example file can be found in `mai
 It is recommended to play the game with a witcher:old world map, 
 as this will ease the difficulty of orientating yourself with the souranding as well as 
 allow for better planning in your own games. I had access to the physical map, which definitely
-made it easier for me to play the game using the emulator. I however could not find any online sources of the map.
+made it easier for me to play the game using the emulator. 
+
+I have provided the rulebook pdf and the game board image. I here mention again, that I do not own The Witcher:Old World 
+and any use of the product is purely for academic purposes.
 
 ### Sampler
 The sampler can sample large number of games in succession, it does use concurency features to run
