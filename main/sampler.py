@@ -140,6 +140,8 @@ def sample_games(num_samples=1000, turns=20):
 
 if __name__ == "__main__":
     ## Make sure to chnage the number of smaples here and turn limit here
+    ## !! IMPORTANT !! if you want to be able to play with multiple agents/players,
+    ## you have to increase the number of players on line 67 , num_players
     sample_sizes = [1000]
     turns = [50]
     results = {}
