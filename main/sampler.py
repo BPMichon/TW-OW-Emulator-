@@ -139,6 +139,7 @@ def sample_games(num_samples=1000, turns=20):
     }
 
 if __name__ == "__main__":
+    ## Make sure to chnage the number of smaples here and turn limit here
     sample_sizes = [1000]
     turns = [50]
     results = {}
@@ -150,7 +151,7 @@ if __name__ == "__main__":
             result = sample_games(num_samples=size, turns=turn_limit)
             results[size][turn_limit] = result
 
-            # Save to CSV
+            
             save_stats_to_csv(result, sample_size=size, turn_limit=turn_limit)
 
     # --- Plotting the Victory Points Distribution ---
