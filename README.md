@@ -2,9 +2,10 @@
 
 # Project Overview
 
-## Requirements
+### Requirements
 Requirements can be found in requirements.txt Install it on to your system via pip or other installers
 
+  
 ## File Structure & Purpose
 ### Main Emulator Logic (main/)
 
@@ -57,10 +58,10 @@ in parallel. Because of this non AI players cannot occur as user input breaks pa
 
 The sampler settings have to be changed within the sampler file.
 
-Line 55 - chnage which agents strat the game
-Line 67 - change the number of players
-Line 145 - change the number of samples
-Line 146 - change the turn limit
+Line 55 - chnage which agents strat the game  
+Line 67 - change the number of players  
+Line 145 - change the number of samples  
+Line 146 - change the turn limit  
 
 The final data get calculated and stored in player_stats.csv
 
@@ -68,14 +69,17 @@ The final data get calculated and stored in player_stats.csv
 This is a copy of sampler that does not include parallisation in order to allow human players, still samples
 a number of games, games occur after eachgother in succession. 
 
-Line 55 - chnage which agents strat the game
-Line 67 - change the number of players
-Line 143 - change the number of samples
-Line 144 - change the turn limit
+Line 55 - chnage which agents strat the game  
+Line 67 - change the number of players  
+Line 143 - change the number of samples  
+Line 144 - change the turn limit  
 
 
 The final data gets collected and written in
 player_stats.scv
+
+### PyTest
+To run pytest we just need to run 'pytest' from project directory, make sure you ahve 'pytest' installed on your system.  
 
 
 
