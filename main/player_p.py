@@ -1,7 +1,6 @@
 import networkx as nx
 import random
 import copy
-from numpy import random
 import itertools
 from itertools import combinations
 from card import load_cards , Card, ItemGraph

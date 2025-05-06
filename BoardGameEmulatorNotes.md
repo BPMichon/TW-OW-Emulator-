@@ -1,4 +1,5 @@
 # Emulator for Witcher:OldWorld
+These are my personal notes made during development of this project
 
 # Update 
 So I realised its probably better to do the board game options for players first, then from each choice the player makes we can generate a whole Board State, as well as possible Moves the player can Take.
